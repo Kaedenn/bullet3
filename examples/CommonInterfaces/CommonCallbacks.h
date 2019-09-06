@@ -42,7 +42,33 @@ enum
 	B3G_CONTROL,
 	B3G_ALT,
 	B3G_RETURN,
-	
+  /* XXX: Kaedenn: Added the following constants */
+  B3G_LEFT = B3G_LEFT_ARROW,
+  B3G_RIGHT = B3G_RIGHT_ARROW,
+  B3G_UP = B3G_UP_ARROW,
+  B3G_DOWN = B3G_DOWN_ARROW,
+  B3G_KP_HOME = 0xff95,
+  B3G_KP_LEFT = 0xff96,
+  B3G_KP_UP = 0xff97,
+  B3G_KP_RIGHT = 0xff98,
+  B3G_KP_DOWN = 0xff99,
+  B3G_KP_PGUP = 0xff9a,
+  B3G_KP_PGDN = 0xff9b,
+  B3G_KP_END = 0xff9c,
+  B3G_KP_ENTER = 0xff9d,
+  B3G_KP_INS = 0xff9e,
+  B3G_KP_DEL = 0xff9f,
+  B3G_KP_0 = B3G_KP_INS,
+  B3G_KP_1 = B3G_KP_END,
+  B3G_KP_2 = B3G_KP_DOWN,
+  B3G_KP_3 = B3G_KP_PGDN,
+  B3G_KP_4 = B3G_KP_LEFT,
+  B3G_KP_5 = 0xff9d,
+  B3G_KP_6 = B3G_KP_RIGHT,
+  B3G_KP_7 = B3G_KP_HOME,
+  B3G_KP_8 = B3G_KP_UP,
+  B3G_KP_9 = B3G_KP_PGUP,
+  B3G_NUMLOCK = 0xff7f
 };
 
 #endif

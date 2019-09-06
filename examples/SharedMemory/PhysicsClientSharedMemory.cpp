@@ -511,8 +511,6 @@ void addJointInfoFromConstraint(int linkIndex, const T* con, U* bodyJoints, bool
 		}
 	}
 
-	//if (mb->m_links[link].m_linkName) {
-
 	if ((info.m_jointType == eRevoluteType) ||
 		(info.m_jointType == ePrismaticType))
 	{

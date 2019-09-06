@@ -116,8 +116,6 @@ struct SampleThreadLocalStorage
 
 void SampleThreadFunc(void* userPtr, void* lsMemory)
 {
-	printf("SampleThreadFunc thread started\n");
-
 	SampleThreadLocalStorage* localStorage = (SampleThreadLocalStorage*)lsMemory;
 
 	SampleArgs* args = (SampleArgs*)userPtr;
@@ -138,9 +136,6 @@ void SampleThreadFunc(void* userPtr, void* lsMemory)
 		requestExit = (exitMagicNumber == MAGIC_RESET_NUMBER);
 		args->m_cs->unlock();
 	}
-
-	printf("finished\n");
-	//do nothing
 }
 
 void* SamplelsMemoryFunc()
@@ -224,7 +219,6 @@ public:
 			for (int i = 0; i < m_numThreads; i++)
 			{
 				m_threadSupport->waitForResponse(&arg0, &arg1);
-				printf("finished waiting for response: %d %d\n", arg0, arg1);
 			}
 		}
 		else
@@ -235,13 +229,8 @@ public:
 				if (m_threadSupport->isTaskCompleted(&arg0, &arg1, 0))
 				{
 					numActiveThreads--;
-					printf("numActiveThreads = %d\n", numActiveThreads);
 				}
-				else
-				{
-					//				printf("polling..");
-				}
-			};
+			}
 		}
 
 		delete m_threadSupport;

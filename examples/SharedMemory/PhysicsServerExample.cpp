@@ -232,7 +232,6 @@ float clampedDeltaTime = 0.2;
 
 void MotionThreadFunc(void* userPtr, void* lsMemory)
 {
-	printf("MotionThreadFunc thread started\n");
 	//MotionThreadLocalStorage* localStorage = (MotionThreadLocalStorage*) lsMemory;
 
 	MotionArgs* args = (MotionArgs*)userPtr;
@@ -306,14 +305,12 @@ void MotionThreadFunc(void* userPtr, void* lsMemory)
 							args->m_isVrControllerPicking[c] = false;
 							args->m_isVrControllerDragging[c] = true;
 							args->m_physicsServerPtr->pickBody(from, to);
-							//printf("PICK!\n");
 						}
 					}
 
 					if (args->m_isVrControllerDragging[c])
 					{
 						args->m_physicsServerPtr->movePickedBody(from, to);
-						// printf(".");
 					}
 
 					if (args->m_isVrControllerReleasing[c])
@@ -321,7 +318,6 @@ void MotionThreadFunc(void* userPtr, void* lsMemory)
 						args->m_isVrControllerDragging[c] = false;
 						args->m_isVrControllerReleasing[c] = false;
 						args->m_physicsServerPtr->removePickingConstraint();
-						//printf("Release pick\n");
 					}
 				}
 
@@ -1505,12 +1501,10 @@ public:
 			}
 		}
 
-		//printf("button=%d, state=%d\n",button,state);
 		return false;
 	}
 	virtual bool keyboardCallback(int key, int state)
 	{
-		//printf("key=%d, state=%d\n", key,state);
 		{
 			m_args[0].m_csGUI->lock();
 			int keyIndex = -1;
@@ -1855,7 +1849,6 @@ void PhysicsServerExample::exitPhysics()
 		if (m_threadSupport->isTaskCompleted(&arg0, &arg1, 0))
 		{
 			numActiveThreads--;
-			printf("numActiveThreads = %d\n", numActiveThreads);
 		}
 		else
 		{
@@ -1865,8 +1858,6 @@ void PhysicsServerExample::exitPhysics()
 		//other threads get out of blocking state (workerThreadWait)
 		stepSimulation(0);
 	};
-
-	printf("stopping threads\n");
 
 	m_threadSupport->deleteCriticalSection(m_args[0].m_cs);
 	m_threadSupport->deleteCriticalSection(m_args[0].m_cs2);

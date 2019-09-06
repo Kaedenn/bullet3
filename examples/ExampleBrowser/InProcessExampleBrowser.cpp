@@ -210,8 +210,6 @@ static double gMinUpdateTimeMicroSecs = 4000.;
 
 void ExampleBrowserThreadFunc(void* userPtr, void* lsMemory)
 {
-	printf("ExampleBrowserThreadFunc started\n");
-
 	ExampleBrowserThreadLocalStorage* localStorage = (ExampleBrowserThreadLocalStorage*)lsMemory;
 
 	ExampleBrowserArgs* args = (ExampleBrowserArgs*)userPtr;
@@ -276,7 +274,6 @@ void ExampleBrowserThreadFunc(void* userPtr, void* lsMemory)
 	args->m_cs->lock();
 	args->m_cs->setSharedParam(0, eExampleBrowserHasTerminated);
 	args->m_cs->unlock();
-	printf("finished\n");
 	//do nothing
 }
 
@@ -366,16 +363,13 @@ void btShutDownExampleBrowser(btInProcessExampleBrowserInternalData* data)
 		if (data->m_threadSupport->isTaskCompleted(&arg0, &arg1, 0))
 		{
 			numActiveThreads--;
-			printf("numActiveThreads = %d\n", numActiveThreads);
 		}
 		else
 		{
-			//                              printf("polling..");
 			b3Clock::usleep(0);
 		}
 	};
 
-	printf("btShutDownExampleBrowser stopping threads\n");
 	data->m_threadSupport->deleteCriticalSection(data->m_args.m_cs);
 
 	delete data->m_threadSupport;

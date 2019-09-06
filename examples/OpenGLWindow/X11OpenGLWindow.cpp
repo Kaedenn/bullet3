@@ -360,10 +360,6 @@ struct InternalData2
 			fprintf(stderr, "Error: a missing func in %s, exiting!\n", X11_LIBRARY);
 			exit(EXIT_FAILURE);
 		}
-		else
-		{
-			printf("X11 functions dynamically loaded using dlopen/dlsym OK!\n");
-		}
 #endif  //DYNAMIC_LOAD_X11_FUNCTIONS
 	}
 };
@@ -486,15 +482,12 @@ void X11OpenGLWindow::enableOpenGL()
         None
       };
 */
-			printf("Creating context\n");
 			ctx = glXCreateContextAttribsARB(m_data->m_dpy, m_data->m_bestFbc, 0,
 											 True, context_attribs);
 
 			// Sync to ensure any errors generated are processed.
 			MyXSync(m_data->m_dpy, False);
-			if (!ctxErrorOccurred && ctx)
-				printf("Created GL 3.3 context\n");
-			else
+			if (ctxErrorOccurred || !ctx)
 			{
 				// Couldn't create GL 3.3 context.  Fall back to old-style 2.x context.
 				// When a context version below 3.0 is requested, implementations will
@@ -530,14 +523,13 @@ void X11OpenGLWindow::enableOpenGL()
 		// Verifying that context is a direct context
 		if (!glXIsDirect(m_data->m_dpy, ctx))
 		{
-			printf("Indirect GLX rendering context obtained\n");
+			/*printf("Indirect GLX rendering context obtained\n");*/
 		}
 		else
 		{
-			printf("Direct GLX rendering context obtained\n");
+			/*printf("Direct GLX rendering context obtained\n");*/
 		}
 
-		printf("Making context current\n");
 		glXMakeCurrent(m_data->m_dpy, m_data->m_win, ctx);
 		m_data->m_glc = ctx;
 	}
@@ -821,7 +813,9 @@ int X11OpenGLWindow::getAsciiCodeFromVirtualKeycode(int keycode)
 			{
 				return (int)key;
 			}
-			result = -1;
+      /* XXX: Kaedenn 2019/08/28: Return key rather than -1 to support keys
+       * other than those listed above */
+      result = (int)key;
 	}
 
 	MyXFree(keysym);
@@ -865,6 +859,59 @@ void X11OpenGLWindow::pumpMessage()
 	// Process all pending events
 	while (MyXPending(m_data->m_dpy))
 	{
+#if 0
+    /* TODO: REMOVE */
+    const char* keyNames[37] = {
+      "",
+      "",
+      "KeyPress",
+      "KeyRelease",
+      "ButtonPress",
+      "ButtonRelease",
+      "MotionNotify",
+      "EnterNotify",
+      "LeaveNotify",
+      "FocusIn",
+      "FocusOut",
+      "KeymapNotify",
+      "Expose",
+      "GraphicsExpose",
+      "NoExpose",
+      "VisibilityNotify",
+      "CreateNotify",
+      "DestroyNotify",
+      "UnmapNotify",
+      "MapNotify",
+      "MapRequest",
+      "ReparentNotify",
+      "ConfigureNotify",
+      "ConfigureRequest",
+      "GravityNotify",
+      "ResizeRequest",
+      "CirculateNotify",
+      "CirculateRequest",
+      "PropertyNotify",
+      "SelectionClear",
+      "SelectionRequest",
+      "SelectionNotify",
+      "ColormapNotify",
+      "ClientMessage",
+      "MappingNotify",
+      "GenericEvent",
+      "LASTEvent",
+    };
+    int mtype = m_data->m_xev.type;
+    if (mtype >= 0 && mtype < 37) {
+      printf("Event %ld: %s\n", mtype, keyNames[mtype]);
+    } else {
+      printf("Unknown event %ld\n", mtype);
+    }
+    if (mtype == 2 || mtype == 3) {
+      printf("  Key state: %u, key code: %u\n", m_data->m_xev.xkey.state, m_data->m_xev.xkey.keycode);
+    }
+    /* END TODO: REMOVE */
+#endif
+
 		MyXNextEvent(m_data->m_dpy, &m_data->m_xev);
 		//      printf("#");
 		//      fflush(stdout);

@@ -217,7 +217,6 @@ void b3PosixThreadSupport::waitForResponse(int* puiArgument0, int* puiArgument1)
 
 void b3PosixThreadSupport::startThreads(ThreadConstructionInfo& threadConstructionInfo)
 {
-	printf("%s creating %i threads.\n", __FUNCTION__, threadConstructionInfo.m_numThreads);
 	m_activeThreadStatus.resize(threadConstructionInfo.m_numThreads);
 
 	m_mainSemaphore = createSem("main");
@@ -225,8 +224,6 @@ void b3PosixThreadSupport::startThreads(ThreadConstructionInfo& threadConstructi
 
 	for (int i = 0; i < threadConstructionInfo.m_numThreads; i++)
 	{
-		printf("starting thread %d\n", i);
-
 		b3ThreadStatus& spuStatus = m_activeThreadStatus[i];
 
 		spuStatus.startSemaphore = createSem("threadLocal");
@@ -243,8 +240,6 @@ void b3PosixThreadSupport::startThreads(ThreadConstructionInfo& threadConstructi
 		spuStatus.m_userThreadFunc = threadConstructionInfo.m_userThreadFunc;
 		spuStatus.m_lsMemoryReleaseFunc = threadConstructionInfo.m_lsMemoryReleaseFunc;
 		spuStatus.threadUsed = 0;
-
-		printf("started thread %d \n", i);
 	}
 }
 
@@ -261,9 +256,7 @@ void b3PosixThreadSupport::stopThreads()
 		checkPThreadFunction(sem_post(spuStatus.startSemaphore));
 		checkPThreadFunction(sem_wait(m_mainSemaphore));
 
-		printf("destroy semaphore\n");
 		destroySem(spuStatus.startSemaphore);
-		printf("semaphore destroyed\n");
 		checkPThreadFunction(pthread_join(spuStatus.thread, 0));
 
 		if (spuStatus.m_lsMemoryReleaseFunc)
@@ -271,9 +264,7 @@ void b3PosixThreadSupport::stopThreads()
 			spuStatus.m_lsMemoryReleaseFunc(spuStatus.m_lsMemory);
 		}
 	}
-	printf("destroy main semaphore\n");
 	destroySem(m_mainSemaphore);
-	printf("main semaphore destroyed\n");
 	m_activeThreadStatus.clear();
 }
 

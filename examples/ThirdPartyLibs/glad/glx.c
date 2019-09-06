@@ -45,10 +45,6 @@ void initX11Struct(X11Struct* x11)
 		fprintf(stderr, "Error: missing func XScreenNumberOfScreen in %s, exiting!\n", X11_LIBRARY);
 		exit(EXIT_FAILURE);
 	}
-	if (!missingFunc)
-	{
-		printf("X11 functions dynamically loaded using dlopen/dlsym OK!\n");
-	}
 }
 #else
 void initX11Struct(X11Struct* x11)
