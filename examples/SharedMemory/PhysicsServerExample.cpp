@@ -164,8 +164,8 @@ enum MyMouseCommandType
 	MyMouseMove = 1,
 	MyMouseButtonDown,
 	MyMouseButtonUp
-
 };
+
 struct MyMouseCommand
 {
 	btVector3 m_rayFrom;
@@ -398,7 +398,6 @@ void MotionThreadFunc(void* userPtr, void* lsMemory)
 								args->m_physicsServerPtr->removePickingConstraint();
 								break;
 							}
-
 							default:
 							{
 							}
