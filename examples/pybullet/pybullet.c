@@ -15,7 +15,7 @@
 #include "../SharedMemory/SharedMemoryInProcessPhysicsC_API.h"
 #ifdef BT_ENABLE_ENET
 #include "../SharedMemory/PhysicsClientUDP_C_API.h"
-#endif  //BT_ENABLE_ENET
+#endif
 
 #ifndef M_PI
 #include <math.h>
@@ -42,7 +42,7 @@
 #endif
 #ifdef BT_ENABLE_CLSOCKET
 #include "../SharedMemory/PhysicsClientTCP_C_API.h"
-#endif  //BT_ENABLE_CLSOCKET
+#endif
 
 #if defined(__APPLE__) && (!defined(B3_NO_PYTHON_FRAMEWORK))
 #include <Python/Python.h>
@@ -52,6 +52,9 @@
 
 #include "../Importers/ImportURDFDemo/urdfStringSplit.h"
 #include "../CommonInterfaces/CommonCallbacks.h"
+
+/* Kaedenn 2019/09/08 Add b3Print */
+#include "Bullet3Common/b3Logging.h"
 
 #ifdef B3_DUMP_PYTHON_VERSION
 #define B3_VALUE_TO_STRING(x) #x
@@ -541,7 +544,7 @@ static PyObject* pybullet_connectPhysicsServer(PyObject* self, PyObject* args, P
 #else
                 PyErr_SetString(BulletError, "UDP is not enabled in this pybullet build");
                 return NULL;
-#endif  //BT_ENABLE_ENET
+#endif
 
                 break;
             }
@@ -553,7 +556,7 @@ static PyObject* pybullet_connectPhysicsServer(PyObject* self, PyObject* args, P
 #else
                 PyErr_SetString(BulletError, "TCP is not enabled in this pybullet build");
                 return NULL;
-#endif  //BT_ENABLE_CLSOCKET
+#endif
 
                 break;
             }
@@ -2025,8 +2028,7 @@ static PyObject* pybullet_loadSoftBody(PyObject* self, PyObject* args, PyObject*
     {
         b3SharedMemoryStatusHandle statusHandle;
         int statusType;
-        b3SharedMemoryCommandHandle command =
-            b3LoadSoftBodyCommandInit(sm, fileName);
+        b3SharedMemoryCommandHandle command = b3LoadSoftBodyCommandInit(sm, fileName);
 
         b3LoadSoftBodySetStartPosition(command, startPos[0], startPos[1], startPos[2]);
         b3LoadSoftBodySetStartOrientation(command, startOrn[0], startOrn[1], startOrn[2], startOrn[3]);
@@ -8164,8 +8166,18 @@ static PyObject* pybullet_createCollisionShapeArray(PyObject* self, PyObject* ar
     PyObject* collisionFramePositionObjArray = 0;
     PyObject* collisionFrameOrientationObjArray = 0;
 
-    static char* kwlist[] = {"shapeTypes", "radii", "halfExtents", "lengths", "fileNames", "meshScales", "planeNormals",
-                             "flags", "collisionFramePositions", "collisionFrameOrientations", "physicsClientId", NULL};
+    static char* kwlist[] = {"shapeTypes",
+                             "radii",
+                             "halfExtents",
+                             "lengths",
+                             "fileNames",
+                             "meshScales",
+                             "planeNormals",
+                             "flags",
+                             "collisionFramePositions",
+                             "collisionFrameOrientations",
+                             "physicsClientId",
+                             NULL};
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOOOOOOOi", kwlist,
                                      &shapeTypeArray, &radiusArray, &halfExtentsObjArray, &lengthArray, &fileNameArray, &meshScaleObjArray, &planeNormalObjArray, &flagsArray, &collisionFramePositionObjArray, &collisionFrameOrientationObjArray, &physicsClientId))
     {
@@ -8606,8 +8618,19 @@ static PyObject* pybullet_createVisualShapeArray(PyObject* self, PyObject* args,
     PyObject* visualFramePositionObjArray = 0;
     PyObject* visualFrameOrientationObjArray = 0;
 
-    static char* kwlist[] = {"shapeTypes", "radii", "halfExtents", "lengths", "fileNames", "meshScales", "planeNormals",
-                             "flags", "rgbaColors", "visualFramePositions", "visualFrameOrientations", "physicsClientId", NULL};
+    static char* kwlist[] = {"shapeTypes",
+                             "radii",
+                             "halfExtents",
+                             "lengths",
+                             "fileNames",
+                             "meshScales",
+                             "planeNormals",
+                             "flags",
+                             "rgbaColors",
+                             "visualFramePositions",
+                             "visualFrameOrientations",
+                             "physicsClientId",
+                             NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOOOOOOOOi", kwlist,
                                      &shapeTypeArray, &radiusArray, &halfExtentsObjArray, &lengthArray, &fileNameArray, &meshScaleObjArray, &planeNormalObjArray, &flagsArray, &rgbaColorArray, &visualFramePositionObjArray, &visualFrameOrientationObjArray, &physicsClientId))
@@ -9433,7 +9456,7 @@ static PyObject* pybullet_getCameraImage(PyObject* self, PyObject* args, PyObjec
             PyTuple_SetItem(pyResultList, 3, pylistDep);
             PyTuple_SetItem(pyResultList, 4, pylistSeg);
             return pyResultList;
-#endif  //PYBULLET_USE_NUMPY
+#endif
 
             return pyResultList;
         }
@@ -9804,7 +9827,7 @@ static PyObject* pybullet_renderImageObsolete(PyObject* self, PyObject* args)
                 PyTuple_SetItem(pyResultList, 3, pyDep);
                 PyTuple_SetItem(pyResultList, 4, pySeg);
             }
-#else   //PYBULLET_USE_NUMPY
+#else
             PyObject* item2;
             PyObject* pylistRGB;
             PyObject* pylistDep;
@@ -9858,9 +9881,7 @@ static PyObject* pybullet_renderImageObsolete(PyObject* self, PyObject* args)
             PyTuple_SetItem(pyResultList, 2, pylistRGB);
             PyTuple_SetItem(pyResultList, 3, pylistDep);
             PyTuple_SetItem(pyResultList, 4, pylistSeg);
-            return pyResultList;
-#endif  //PYBULLET_USE_NUMPY
-
+#endif
             return pyResultList;
         }
     }
@@ -10048,8 +10069,7 @@ static PyObject* pybullet_getQuaternionFromEuler(PyObject* self, PyObject* args,
         }
         else
         {
-            PyErr_SetString(BulletError,
-                            "Euler angles need a 3 coordinates [roll, pitch, yaw].");
+            PyErr_SetString(BulletError, "Euler angles need a 3 coordinates [roll, pitch, yaw].");
             Py_DECREF(seq);
             return NULL;
         }
@@ -10057,8 +10077,7 @@ static PyObject* pybullet_getQuaternionFromEuler(PyObject* self, PyObject* args,
     }
     else
     {
-        PyErr_SetString(BulletError,
-                        "Euler angles need a 3 coordinates [roll, pitch, yaw].");
+        PyErr_SetString(BulletError, "Euler angles need a 3 coordinates [roll, pitch, yaw].");
         return NULL;
     }
 
@@ -10089,7 +10108,9 @@ static PyObject* pybullet_getQuaternionFromEuler(PyObject* self, PyObject* args,
                 int i;
                 pylist = PyTuple_New(4);
                 for (i = 0; i < 4; i++)
+                {
                     PyTuple_SetItem(pylist, i, PyFloat_FromDouble(quat[i]));
+                }
                 return pylist;
             }
         }
@@ -11647,6 +11668,24 @@ static PyObject* pybullet_calculateMassMatrix(PyObject* self, PyObject* args, Py
     return Py_None;
 }
 
+/* Kaedenn 2019/09/07 */
+static PyObject* pybullet_b3Print(PyObject* self, PyObject* args, PyObject* kwargs)
+{
+    char* message = NULL;
+    char* eol = "";
+
+    static char* kwlist[] = {"message", "end", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|s", kwlist, &message, &eol)) {
+        return NULL;
+    }
+
+    b3Printf("%s%s", message, eol);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 /* Methods exposed in the Python module */
 static PyMethodDef MethodDefs[] = {
     {"connect",
@@ -12498,6 +12537,13 @@ static PyMethodDef MethodDefs[] = {
      METH_VARARGS | METH_KEYWORDS,
      "Get version of the API. Compatibility exists for connections using the same API version. Make sure both client and server use the same number of bits (32-bit or 64bit)."},
 
+    /* Kaedenn 2019/09/07 */
+    {"b3Print",
+     (PyCFunction)pybullet_b3Print,
+     METH_VARARGS | METH_KEYWORDS,
+     "b3Print(message, end=\"\")\n"
+     "Print a message to the example browser."},
+
     // todo(erwincoumans)
     // saveSnapshot
     // loadSnapshot
@@ -12743,7 +12789,7 @@ initpybullet(void)
     AddConstant("B3G_RETURN", B3G_RETURN);
     AddConstant("B3G_SPACE", B3G_SPACE);
 
-    /* XXX: Kaedenn 2019/08/31 Added keyboard constants below */
+    /* Kaedenn 2019/08/31 Added keyboard constants below */
     AddConstant("B3G_LEFT", B3G_LEFT);
     AddConstant("B3G_RIGHT", B3G_RIGHT);
     AddConstant("B3G_UP", B3G_UP);
@@ -12759,7 +12805,7 @@ initpybullet(void)
     AddConstant("B3G_KP_8", B3G_KP_8);
     AddConstant("B3G_KP_9", B3G_KP_9);
 
-    /* XXX: Kaedenn 2019/09/02 Added keyboard constants below */
+    /* Kaedenn 2019/09/02 Added keyboard constants below */
     AddConstant("B3G_NUMLOCK", XK_Num_Lock);
     AddConstant("B3G_KP_SPACE", XK_KP_Space);
     AddConstant("B3G_KP_TAB", XK_KP_Tab);
@@ -12791,8 +12837,7 @@ initpybullet(void)
     AddConstant("B3G_KP_DECIMAL", XK_KP_Decimal);
     AddConstant("B3G_KP_DIVIDE", XK_KP_Divide);
 
-
-    /* XXX: Kaedenn 2019/08/27 Added mouse constants below */
+    /* Kaedenn 2019/08/27 Added mouse constants below */
     AddConstant("MOUSE_LEFT_BUTTON", 0);
     AddConstant("MOUSE_WHEEL", 1);
     AddConstant("MOUSE_RIGHT_BUTTON", 2);
@@ -12834,7 +12879,7 @@ initpybullet(void)
     Py_INCREF(BulletError);
     PyModule_AddObject(m, "error", BulletError);
 
-    /* XXX: Kaedenn 2019/08/31 Added new error type which inherits from BulletError */
+    /* Kaedenn 2019/08/31 Added new error type which inherits from BulletError */
     BulletNotConnectedError = PyErr_NewException("pybullet.NotConnectedError", BulletError, NULL);
     Py_INCREF(BulletNotConnectedError);
     PyModule_AddObject(m, "NotConnectedError", BulletNotConnectedError);
@@ -12844,10 +12889,10 @@ initpybullet(void)
 
     Py_AtExit(b3pybulletExitFunc);
 
-#ifdef PYBULLET_USE_NUMPY
     // Initialize numpy array.
+#ifdef PYBULLET_USE_NUMPY
     import_array();
-#endif  //PYBULLET_USE_NUMPY
+#endif
 
 #if PY_MAJOR_VERSION >= 3
     return m;
