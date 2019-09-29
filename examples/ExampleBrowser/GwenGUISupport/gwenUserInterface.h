@@ -7,6 +7,7 @@ typedef void (*b3ComboBoxCallback)(int combobox, const char* item);
 typedef void (*b3ToggleButtonCallback)(int button, int state);
 typedef void (*b3FileOpenCallback)();
 typedef void (*b3QuitCallback)();
+typedef void (*b3SaveCallback)();
 
 namespace Gwen
 {
@@ -53,6 +54,7 @@ public:
 
 	void registerFileOpenCallback(b3FileOpenCallback callback);
 	void registerQuitCallback(b3QuitCallback callback);
+	void registerSaveCallback(b3SaveCallback callback);
 
 	GwenInternalData* getInternalData()
 	{

@@ -19,6 +19,7 @@ class MyMenuItems : public Gwen::Controls::Base
 public:
 	b3FileOpenCallback m_fileOpenCallback;
 	b3QuitCallback m_quitCallback;
+	b3SaveCallback m_saveCallback;
 
 	MyMenuItems() : Gwen::Controls::Base(0), m_fileOpenCallback(0)
 	{
@@ -37,6 +38,13 @@ public:
 			(*m_fileOpenCallback)();
 		}
 	}
+	void mySaveBullet(Gwen::Controls::Base* pControl)
+	{
+		if (m_saveCallback)
+		{
+			(*m_saveCallback)();
+		}
+	}
 };
 
 struct MyTestMenuBar : public Gwen::Controls::MenuStrip
@@ -53,10 +61,13 @@ struct MyTestMenuBar : public Gwen::Controls::MenuStrip
 			m_menuItems = new MyMenuItems();
 			m_menuItems->m_fileOpenCallback = 0;
 			m_menuItems->m_quitCallback = 0;
+			m_menuItems->m_saveCallback = NULL;
 
 			m_fileMenu = AddItem(L"File");
 
 			m_fileMenu->GetMenu()->AddItem(L"Open", m_menuItems, (Gwen::Event::Handler::Function)&MyMenuItems::fileOpen);
+			/* Kaedenn 2019/09/28 */
+			m_fileMenu->GetMenu()->AddItem(L"Save", m_menuItems, (Gwen::Event::Handler::Function)&MyMenuItems::mySaveBullet);
 			m_fileMenu->GetMenu()->AddItem(L"Quit", m_menuItems, (Gwen::Event::Handler::Function)&MyMenuItems::myQuitApp);
 			m_viewMenu = AddItem(L"View");
 		}
@@ -231,6 +242,11 @@ void GwenUserInterface::registerFileOpenCallback(b3FileOpenCallback callback)
 void GwenUserInterface::registerQuitCallback(b3QuitCallback callback)
 {
 	m_data->m_menuItems->m_quitCallback = callback;
+}
+
+void GwenUserInterface::registerSaveCallback(b3SaveCallback callback)
+{
+	m_data->m_menuItems->m_saveCallback = callback;
 }
 
 void GwenUserInterface::init(int width, int height, Gwen::Renderer::Base* renderer, float retinaScale)

@@ -307,11 +307,11 @@ btInProcessExampleBrowserInternalData* btCreateInProcessExampleBrowser(int argc,
 
 	data->m_threadSupport = createExampleBrowserThreadSupport(numThreads);
 
-	printf("argc=%d\n", argc);
+	/*printf("argc=%d\n", argc);
 	for (i = 0; i < argc; i++)
 	{
 		printf("argv[%d] = %s\n", i, argv2[i]);
-	}
+	}*/
 
 	for (i = 0; i < data->m_threadSupport->getNumTasks(); i++)
 	{

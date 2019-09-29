@@ -354,11 +354,11 @@ SimpleOpenGL3App::SimpleOpenGL3App(const char* title, int width, int height, boo
 
 	b3Assert(glGetError() == GL_NO_ERROR);
 
-	{
+	/*{
 		printGLString("Version", GL_VERSION);
 		printGLString("Vendor", GL_VENDOR);
 		printGLString("Renderer", GL_RENDERER);
-	}
+	}*/
 
 	glClearColor(m_backgroundColorRGB[0],
 				 m_backgroundColorRGB[1],

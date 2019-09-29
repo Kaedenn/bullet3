@@ -112,6 +112,10 @@ struct GUIHelperInterface
 	virtual int addUserDebugParameter(const char* txt, double rangeMin, double rangeMax, double startValue) { return -1; };
 	virtual int readUserDebugParameter(int itemUniqueId, double* value) { return 0; }
 
+	/* Kaedenn 2019/09/09 */
+	virtual int addUserDebugButton(const char* txt, bool isTrigger, bool initialState) { return -1; };
+	virtual int readUserDebugButton(int itemUniqueId, double* value) { return 0; }
+
 	virtual void removeUserDebugItem(int debugItemUniqueId){};
 	virtual void removeAllUserDebugItems(){};
 	virtual void setVisualizerFlagCallback(VisualizerFlagCallback callback) {}

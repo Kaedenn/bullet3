@@ -102,12 +102,12 @@ static void* threadFunction(void* argument)
 			//exit Thread
 			status->m_status = 3;
 			checkPThreadFunction(sem_post(status->m_mainSemaphore));
-			printf("Thread with taskId %i exiting\n", status->m_taskId);
+			/*printf("Thread with taskId %i exiting\n", status->m_taskId);*/
 			break;
 		}
 	}
 
-	printf("Thread TERMINATED\n");
+	/*printf("Thread TERMINATED\n");*/
 	return 0;
 }
 

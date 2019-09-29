@@ -558,8 +558,10 @@ void X11OpenGLWindow::enableOpenGL()
 	//Access pthreads as a workaround for a bug in Linux/Ubuntu
 	//See https://bugs.launchpad.net/ubuntu/+source/nvidia-graphics-drivers-319/+bug/1248642
 
+  /*
 	int i = pthread_getconcurrency();
 	printf("pthread_getconcurrency()=%d\n", i);
+  */
 
 	//    const GLubyte* ext = glGetString(GL_EXTENSIONS);
 	//    printf("GL_EXTENSIONS=%s\n", ext);
@@ -1227,14 +1229,14 @@ int X11OpenGLWindow::fileOpenDialog(char* filename, int maxNameLength)
 			if (len > 0)
 			{
 				filename[len - 1] = 0;
-				printf("file open (length=%d) = %s\n", len, filename);
+				fprintf(stderr, "file open (length=%d) = %s\n", len, filename);
 			}
 		}
 		pclose(output);
 	}
 	else
 	{
-		printf("Error: fileOpenDialog no popen output, perhaps install zenity?\n");
+		fprintf(stderr, "Error: fileOpenDialog no popen output, perhaps install zenity?\n");
 	}
 	MyXRaiseWindow(m_data->m_dpy, m_data->m_win);
 	return len;

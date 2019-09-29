@@ -574,7 +574,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				}
 				break;
 			}
-
 			case CMD_MJCF_LOADING_COMPLETED:
 			{
 				B3_PROFILE("CMD_MJCF_LOADING_COMPLETED");
@@ -596,7 +595,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 
 				break;
 			}
-
 			case CMD_CREATE_MULTI_BODY_COMPLETED:
 			case CMD_URDF_LOADING_COMPLETED:
 			{
@@ -779,7 +777,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				}
 				break;
 			}
-
 			case CMD_USER_CONSTRAINT_FAILED:
 			{
 				B3_PROFILE("CMD_USER_CONSTRAINT_FAILED");
@@ -835,7 +832,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 
 				break;
 			}
-
 			case CMD_BULLET_DATA_STREAM_RECEIVED_COMPLETED:
 			{
 				B3_PROFILE("CMD_BULLET_DATA_STREAM_RECEIVED_COMPLETED");
@@ -856,7 +852,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 
 				break;
 			}
-
 			case CMD_ACTUAL_STATE_UPDATE_COMPLETED:
 			{
 				B3_PROFILE("CMD_ACTUAL_STATE_UPDATE_COMPLETED");
@@ -986,7 +981,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 
 				break;
 			}
-
 			case CMD_CAMERA_IMAGE_COMPLETED:
 			{
 				B3_PROFILE("CMD_CAMERA_IMAGE_COMPLETED");
@@ -1034,7 +1028,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 
 				break;
 			}
-
 			case CMD_CAMERA_IMAGE_FAILED:
 			{
 				B3_PROFILE("CMD_CAMERA_IMAGE_FAILED");
@@ -1073,7 +1066,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				b3Warning("Overlapping object query failed");
 				break;
 			}
-
 			case CMD_REQUEST_RAY_CAST_INTERSECTIONS_COMPLETED:
 			{
 				B3_PROFILE("m_raycastHits");
@@ -1089,7 +1081,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				}
 				break;
 			}
-
 			case CMD_REQUEST_VR_EVENTS_DATA_COMPLETED:
 			{
 				B3_PROFILE("CMD_REQUEST_VR_EVENTS_DATA_COMPLETED");
@@ -1104,7 +1095,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				}
 				break;
 			}
-
 			case CMD_REQUEST_KEYBOARD_EVENTS_DATA_COMPLETED:
 			{
 				B3_PROFILE("CMD_REQUEST_KEYBOARD_EVENTS_DATA_COMPLETED");
@@ -1119,7 +1109,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				}
 				break;
 			}
-
 			case CMD_REQUEST_MOUSE_EVENTS_DATA_COMPLETED:
 			{
 				B3_PROFILE("CMD_REQUEST_MOUSE_EVENTS_DATA_COMPLETED");
@@ -1134,7 +1123,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				}
 				break;
 			}
-
 			case CMD_REQUEST_AABB_OVERLAP_COMPLETED:
 			{
 				B3_PROFILE("CMD_REQUEST_AABB_OVERLAP_COMPLETED");
@@ -1182,13 +1170,11 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				b3Warning("Contact Point Information Request failed");
 				break;
 			}
-
 			case CMD_SAVE_WORLD_COMPLETED:
 			{
 				B3_PROFILE("CMD_SAVE_WORLD_COMPLETED");
 				break;
 			}
-
 			case CMD_SAVE_WORLD_FAILED:
 			{
 				B3_PROFILE("CMD_SAVE_WORLD_FAILED");
@@ -1271,7 +1257,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				b3Warning("User debug draw failed");
 				break;
 			}
-
 			case CMD_SYNC_BODY_INFO_COMPLETED:
 			{
 				clearCachedBodies();
@@ -1285,7 +1270,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 			{
 				break;
 			};
-
 			case CMD_STATE_LOGGING_FAILED:
 			{
 				b3Warning("State Logging failed");
@@ -1328,7 +1312,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 			{
 				break;
 			}
-
 			case CMD_CREATE_MULTI_BODY_FAILED:
 			{
 				b3Warning("Request createMultiBody failed");
@@ -1366,7 +1349,6 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 				b3Warning("custom plugin command failed");
 				break;
 			}
-
 			case CMD_CALCULATED_MASS_MATRIX_FAILED:
 			{
 				b3Warning("calculate mass matrix failed");

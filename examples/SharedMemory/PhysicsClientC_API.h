@@ -231,6 +231,10 @@ extern "C"
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadParameter(b3PhysicsClientHandle physClient, int debugItemUniqueId);
 	B3_SHARED_API int b3GetStatusDebugParameterValue(b3SharedMemoryStatusHandle statusHandle, double* paramValue);
 
+  /* Kaedenn 2019/09/10 */
+	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClientHandle physClient, const char* txt, double startValue);
+	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadButton(b3PhysicsClientHandle physClient, int debugItemUniqueId);
+
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugDrawRemove(b3PhysicsClientHandle physClient, int debugItemUniqueId);
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugDrawRemoveAll(b3PhysicsClientHandle physClient);
 

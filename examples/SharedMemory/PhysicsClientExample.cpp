@@ -13,6 +13,7 @@
 #include "PhysicsDirectC_API.h"
 #include "PhysicsClientC_API.h"
 #include "PhysicsServerSharedMemory.h"
+
 struct MyMotorInfo2
 {
 	btScalar m_velTarget;
@@ -91,7 +92,7 @@ public:
 		float dist = 3.45;
 		float pitch = -16.2;
 		float yaw = 287;
-		float targetPos[3] = {2.05, 0.02, 0.53};  //-3,2.8,-2.5};
+		float targetPos[3] = {2.05, 0.02, 0.53};  //-3,2.8,-2.5;
 		m_guiHelper->resetCamera(dist, yaw, pitch, targetPos[0], targetPos[1], targetPos[2]);
 	}
 

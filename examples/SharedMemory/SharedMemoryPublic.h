@@ -237,7 +237,7 @@ enum JointInfoFlags
 	JOINT_HAS_MOTORIZED_POWER = 1,
 };
 
-enum
+enum CollisionShape
 {
 	COLLISION_SHAPE_TYPE_BOX = 1,
 	COLLISION_SHAPE_TYPE_CYLINDER_X,
@@ -630,7 +630,7 @@ struct b3ContactPointData
 	double m_linearFrictionDirection2[3];
 };
 
-enum
+enum ContactQueryMode
 {
 	CONTACT_QUERY_MODE_REPORT_EXISTING_CONTACT_POINTS = 0,
 	CONTACT_QUERY_MODE_COMPUTE_CLOSEST_POINTS = 1,
@@ -677,7 +677,7 @@ struct b3RaycastInformation
 	struct b3RayHitInfo* m_rayHits;
 };
 
-typedef union {
+typedef union RayData {
 	struct b3RayData a;
 	struct b3RayHitInfo b;
 } RAY_DATA_UNION;
@@ -767,7 +767,7 @@ struct b3LinkState
 };
 
 //todo: discuss and decide about control mode and combinations
-enum
+enum ControlMode
 {
 	//    POSITION_CONTROL=0,
 	CONTROL_MODE_VELOCITY = 0,
@@ -963,7 +963,6 @@ struct b3PhysicsSimulationParameters
 	int m_reportSolverAnalytics;
 };
 
-
 enum eConstraintSolverTypes
 {
 	eConstraintSolverLCP_SI = 1,
@@ -999,7 +998,6 @@ enum eFileIOActions
 	eRemoveFileIOAction,
 };
 
-
 enum eFileIOTypes
 {
 	ePosixFileIO = 1,
@@ -1007,7 +1005,6 @@ enum eFileIOTypes
 	eCNSFileIO,
 	eInMemoryFileIO,
 };
-
 
 //limits for vertices/indices in PyBullet::createCollisionShape
 //Make sure the data fits in SHARED_MEMORY_MAX_STREAM_CHUNK_SIZE
