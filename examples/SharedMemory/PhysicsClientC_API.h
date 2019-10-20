@@ -232,7 +232,7 @@ extern "C"
 	B3_SHARED_API int b3GetStatusDebugParameterValue(b3SharedMemoryStatusHandle statusHandle, double* paramValue);
 
 	/* Kaedenn 2019/09/10 */
-	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClientHandle physClient, const char* txt, double startValue);
+	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClientHandle physClient, const char* txt, int startValue, int isTrigger);
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadButton(b3PhysicsClientHandle physClient, int debugItemUniqueId);
 
 	/* Kaedenn 2019/10/18 */

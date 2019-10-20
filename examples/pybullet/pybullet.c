@@ -5742,12 +5742,13 @@ static PyObject* pybullet_addUserDebugButton(PYBULLET_API_ARGS)
 
 	char* text = 0;
 	int startValue = 0;
+	int isTrigger = 0;
 
 	int physicsClientId = 0;
 	b3PhysicsClientHandle sm = 0;
-	static char* kwlist[] = {"paramName", "startValue", "physicsClientId", NULL};
+	static char* kwlist[] = {"paramName", "startValue", "isTrigger", "physicsClientId", NULL};
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ii", kwlist, &text, &startValue, &physicsClientId))
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ii", kwlist, &text, &startValue, &isTrigger, &physicsClientId))
 	{
 		return NULL;
 	}
@@ -5758,7 +5759,7 @@ static PyObject* pybullet_addUserDebugButton(PYBULLET_API_ARGS)
 		return NULL;
 	}
 
-	commandHandle = b3InitUserDebugAddButton(sm, text, startValue);
+	commandHandle = b3InitUserDebugAddButton(sm, text, startValue, isTrigger);
 
 	statusHandle = b3SubmitClientCommandAndWaitStatus(sm, commandHandle);
 	statusType = b3GetStatusType(statusHandle);

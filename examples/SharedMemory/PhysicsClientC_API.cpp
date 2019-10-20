@@ -3801,7 +3801,7 @@ B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadParameter(b3Physics
 }
 
 /* Kaedenn 2019/09/10 */
-B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClientHandle physClient, const char* txt, double startValue)
+B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClientHandle physClient, const char* txt, int startValue, int isTrigger)
 {
 	PhysicsClient* cl = (PhysicsClient*)physClient;
 	b3Assert(cl);
@@ -3810,18 +3810,11 @@ B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClie
 	b3Assert(command);
 	command->m_type = CMD_USER_DEBUG_DRAW;
 	command->m_updateFlags = USER_DEBUG_ADD_BUTTON;
-	int len = strlen(txt);
-	if (len < MAX_FILENAME_LENGTH)
-	{
-		strcpy(command->m_userDebugDrawArgs.m_text, txt);
-	}
-	else
-	{
-		command->m_userDebugDrawArgs.m_text[0] = 0;
-	}
-	
+	strncpy(command->m_userDebugDrawArgs.m_text, txt, MAX_FILENAME_LENGTH);
+
+	command->m_userDebugDrawArgs.m_startValue = startValue;
 	command->m_userDebugDrawArgs.m_parentObjectUniqueId = -1;
-	command->m_userDebugDrawArgs.m_optionFlags = 0;
+	command->m_userDebugDrawArgs.m_optionFlags = isTrigger ? 1 : 0;
 	return (b3SharedMemoryCommandHandle)command;
 }
 
