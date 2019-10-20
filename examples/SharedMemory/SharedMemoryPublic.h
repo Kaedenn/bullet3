@@ -961,6 +961,9 @@ struct b3PhysicsSimulationParameters
 	int m_constraintSolverType;
 	int m_minimumSolverIslandSize;
 	int m_reportSolverAnalytics;
+
+	/* Kaedenn 2019/10/13 */
+	int m_verboseMode;
 };
 
 enum eConstraintSolverTypes

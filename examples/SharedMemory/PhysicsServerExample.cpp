@@ -1246,11 +1246,6 @@ public:
                 return 1;
             }
         }
-		double tmpValue = 0;
-		if (readUserDebugButton(itemUniqueId, &tmpValue)) {
-			*value = tmpValue;
-			return 1;
-		}
         return 0;
     }
     int m_userDebugParamUid;
@@ -1276,6 +1271,7 @@ public:
     UserDebugButton m_tmpButton;
     int m_userDebugButtonUid;
 
+    /* Kaedenn 2019/09/09 */
     virtual int readUserDebugButton(int itemUniqueId, double* value)
     {
         for (int i = 0; i < m_userDebugButtons.size(); i++)
@@ -1289,6 +1285,7 @@ public:
         return 0;
     }
 
+    /* Kaedenn 2019/09/09 */
     virtual int addUserDebugButton(const char* txt, bool isTrigger, bool initialState)
     {
         strcpy(m_tmpButton.m_text, txt);
@@ -1302,6 +1299,20 @@ public:
         workerThreadWait();
         return m_userDebugButtonUid;
     }
+
+	/* Kaedenn 2019/10/18 */
+	virtual int resetUserDebugButton(int itemUniqueId)
+	{
+		for (int i = 0; i < m_userDebugButtons.size(); i++)
+		{
+			if (m_userDebugButtons[i]->m_itemUniqueId == itemUniqueId)
+			{
+				m_userDebugButtons[i]->m_value = 0;
+				return 1;
+			}
+		}
+		return 0;
+	}
 
     btAlignedObjectArray<UserDebugDrawLine> m_userDebugLines;
     UserDebugDrawLine m_tmpLine;

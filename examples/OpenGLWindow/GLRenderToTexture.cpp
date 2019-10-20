@@ -10,7 +10,10 @@
 bool gIntelLinuxglDrawBufferWorkaround = false;
 
 GLRenderToTexture::GLRenderToTexture()
-	: m_framebufferName(0)
+	: m_framebufferName(0),
+	  m_depthrenderbuffer(0),
+	  m_initialized(false),
+	  m_renderTextureType(0)
 {
 #if !defined(_WIN32) && !defined(__APPLE__)
 	const GLubyte* ven = glGetString(GL_VENDOR);

@@ -116,6 +116,7 @@ void SimpleMouseButtonCallback(int button, int state, float x, float y)
 {
 	gApp->defaultMouseButtonCallback(button, state, x, y);
 }
+
 void SimpleMouseMoveCallback(float x, float y)
 {
 	gApp->defaultMouseMoveCallback(x, y);
@@ -210,6 +211,7 @@ struct MyRenderCallbacks : public RenderCallbacks
 			m_color[i] = color[i];
 		}
 	}
+
 	virtual void updateTexture(sth_texture* texture, sth_glyph* glyph, int textureWidth, int textureHeight)
 	{
 		if (glyph)
@@ -281,6 +283,7 @@ struct MyRenderCallbacks : public RenderCallbacks
 			}
 		}
 	}
+
 	virtual void render(sth_texture* texture)
 	{
 		int index = 0;
@@ -1142,6 +1145,7 @@ void SimpleOpenGL3App::dumpFramesToVideo(const char* mp4FileName)
 		m_data->m_ffmpegFile = 0;
 	}
 }
+
 void SimpleOpenGL3App::dumpNextFrameToPng(const char* filename)
 {
 	// open pipe to ffmpeg's stdin in binary write mode
@@ -1180,6 +1184,7 @@ void SimpleOpenGL3App::setUpAxis(int axis)
 	b3Assert((axis == 1) || (axis == 2));  //only Y or Z is supported at the moment
 	m_data->m_upAxis = axis;
 }
+
 int SimpleOpenGL3App::getUpAxis() const
 {
 	return m_data->m_upAxis;

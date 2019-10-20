@@ -33,33 +33,35 @@
 
 #include <pthread.h>
 
-GLint att[] = {GLX_RGBA,
-			   GLX_DEPTH_SIZE, 24,
-			   GLX_RED_SIZE, 8,
-			   GLX_GREEN_SIZE, 8,
-			   GLX_BLUE_SIZE, 8,
-			   GLX_ALPHA_SIZE, 8,
-			   GLX_STENCIL_SIZE, 8,
-			   GLX_DOUBLEBUFFER,
-			   None};
+GLint att[] = {
+	GLX_RGBA,
+	GLX_DEPTH_SIZE,		24,
+	GLX_RED_SIZE,		8,
+	GLX_GREEN_SIZE,		8,
+	GLX_BLUE_SIZE,		8,
+	GLX_ALPHA_SIZE,		8,
+	GLX_STENCIL_SIZE,	8,
+	GLX_DOUBLEBUFFER,
+	None
+};
 /*
- static int att[] =
-            {
-                GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None
+static int att[] =
+{
+  GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None
 
-              GLX_X_RENDERABLE    , True,
-              GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT,
-              GLX_RENDER_TYPE     , GLX_RGBA_BIT,
-              GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
-              GLX_RED_SIZE        , 8,
-              GLX_GREEN_SIZE      , 8,
-              GLX_BLUE_SIZE       , 8,
-              GLX_ALPHA_SIZE      , 8,
-              GLX_DEPTH_SIZE      , 24,
-              GLX_STENCIL_SIZE    , 8,
-              GLX_DOUBLEBUFFER    , True,
-              None
-            };
+  GLX_X_RENDERABLE		, True,
+  GLX_DRAWABLE_TYPE		, GLX_WINDOW_BIT,
+  GLX_RENDER_TYPE		, GLX_RGBA_BIT,
+  GLX_X_VISUAL_TYPE		, GLX_TRUE_COLOR,
+  GLX_RED_SIZE			, 8,
+  GLX_GREEN_SIZE		, 8,
+  GLX_BLUE_SIZE			, 8,
+  GLX_ALPHA_SIZE		, 8,
+  GLX_DEPTH_SIZE		, 24,
+  GLX_STENCIL_SIZE		, 8,
+  GLX_DOUBLEBUFFER		, True,
+  None
+};
 */
 static bool forceOpenGL3 = true;
 
@@ -173,7 +175,6 @@ struct InternalData2
 	int m_glHeight;
 
 #ifdef DYNAMIC_LOAD_X11_FUNCTIONS
-	//dynamically load stuff
 	void* m_x11_library;
 	PFNXFREE m_x11_XFree;
 	PFNXSETERRORHANDLER m_x11_XSetErrorHandler;
@@ -613,20 +614,20 @@ void X11OpenGLWindow::createWindow(const b3gWindowConstructionInfo& ci)
 			exit(EXIT_FAILURE);
 		}
 
-		static int visual_attribs[] =
-			{
-				GLX_X_RENDERABLE, True,
-				GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-				GLX_RENDER_TYPE, GLX_RGBA_BIT,
-				GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
-				GLX_RED_SIZE, 8,
-				GLX_GREEN_SIZE, 8,
-				GLX_BLUE_SIZE, 8,
-				GLX_ALPHA_SIZE, 8,
-				GLX_DEPTH_SIZE, 24,
-				GLX_STENCIL_SIZE, 8,
-				GLX_DOUBLEBUFFER, True,
-				None};
+		static int visual_attribs[] = {
+			GLX_X_RENDERABLE, True,
+			GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+			GLX_RENDER_TYPE, GLX_RGBA_BIT,
+			GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+			GLX_RED_SIZE, 8,
+			GLX_GREEN_SIZE, 8,
+			GLX_BLUE_SIZE, 8,
+			GLX_ALPHA_SIZE, 8,
+			GLX_DEPTH_SIZE, 24,
+			GLX_STENCIL_SIZE, 8,
+			GLX_DOUBLEBUFFER, True,
+			None
+		};
 		int fbcount;
 		GLXFBConfig* fbc = glXChooseFBConfig(m_data->m_dpy, DefaultScreen(m_data->m_dpy), visual_attribs, &fbcount);
 		if (!fbc)
@@ -807,6 +808,7 @@ int X11OpenGLWindow::getAsciiCodeFromVirtualKeycode(int keycode)
 		case XK_F15:
 			return B3G_F15;
 		default:
+			/* Kaedenn 2019/10/17: Return keycode exactly as-is
 			// Make lowercase
 			MyXConvertCase(key, &key_lc, &key_uc);
 			key = key_lc;
@@ -815,9 +817,10 @@ int X11OpenGLWindow::getAsciiCodeFromVirtualKeycode(int keycode)
 			{
 				return (int)key;
 			}
-      /* XXX: Kaedenn 2019/08/28: Return key rather than -1 to support keys
-       * other than those listed above */
-      result = (int)key;
+			*/
+			/* XXX: Kaedenn 2019/08/28: Return key rather than -1 to support keys
+			 * other than those listed above */
+			result = (int)key;
 	}
 
 	MyXFree(keysym);
@@ -915,8 +918,6 @@ void X11OpenGLWindow::pumpMessage()
 #endif
 
 		MyXNextEvent(m_data->m_dpy, &m_data->m_xev);
-		//      printf("#");
-		//      fflush(stdout);
 		switch (m_data->m_xev.type)
 		{
 			case KeyPress:
@@ -1184,14 +1185,17 @@ b3MouseMoveCallback X11OpenGLWindow::getMouseMoveCallback()
 {
 	return m_data->m_mouseMoveCallback;
 }
+
 b3MouseButtonCallback X11OpenGLWindow::getMouseButtonCallback()
 {
 	return m_data->m_mouseButtonCallback;
 }
+
 b3ResizeCallback X11OpenGLWindow::getResizeCallback()
 {
 	return m_data->m_resizeCallback;
 }
+
 b3WheelCallback X11OpenGLWindow::getWheelCallback()
 {
 	return m_data->m_wheelCallback;
@@ -1208,14 +1212,13 @@ int X11OpenGLWindow::getWidth() const
 		return m_data->m_glWidth;
 	return 0;
 }
+
 int X11OpenGLWindow::getHeight() const
 {
 	if (m_data)
 		return m_data->m_glHeight;
 	return 0;
 }
-
-#include <stdio.h>
 
 int X11OpenGLWindow::fileOpenDialog(char* filename, int maxNameLength)
 {

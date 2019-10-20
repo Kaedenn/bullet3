@@ -804,6 +804,15 @@ B3_SHARED_API int b3PhysicsParamSetDefaultFrictionCFM(b3SharedMemoryCommandHandl
 	return 0;
 }
 
+/* Kaedenn 2019/10/13 */
+B3_SHARED_API int b3PhysicsParamSetVerboseMode(b3SharedMemoryCommandHandle commandHandle, int verboseMode)
+{
+	struct SharedMemoryCommand* command = (struct SharedMemoryCommand*)commandHandle;
+	b3Assert(command->m_type == CMD_SEND_PHYSICS_SIMULATION_PARAMETERS);
+	command->m_updateFlags |= SIM_PARAM_UPDATE_VERBOSE_MODE;
+	command->m_physSimParamArgs.m_verboseMode = verboseMode;
+}
+
 B3_SHARED_API b3SharedMemoryCommandHandle b3InitStepSimulationCommand(b3PhysicsClientHandle physClient)
 {
 	PhysicsClient* cl = (PhysicsClient*)physClient;
@@ -3811,6 +3820,38 @@ B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClie
 		command->m_userDebugDrawArgs.m_text[0] = 0;
 	}
 	
+	command->m_userDebugDrawArgs.m_parentObjectUniqueId = -1;
+	command->m_userDebugDrawArgs.m_optionFlags = 0;
+	return (b3SharedMemoryCommandHandle)command;
+}
+
+/* Kaedenn 2019/10/18 */
+B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadButton(b3PhysicsClientHandle physClient, int debugItemUniqueId)
+{
+	PhysicsClient* cl = (PhysicsClient*)physClient;
+	b3Assert(cl);
+	b3Assert(cl->canSubmitCommand());
+	struct SharedMemoryCommand* command = cl->getAvailableSharedMemoryCommand();
+	b3Assert(command);
+	command->m_type = CMD_USER_DEBUG_DRAW;
+	command->m_updateFlags = USER_DEBUG_READ_BUTTON;
+	command->m_userDebugDrawArgs.m_itemUniqueId = debugItemUniqueId;
+	command->m_userDebugDrawArgs.m_parentObjectUniqueId = -1;
+	command->m_userDebugDrawArgs.m_optionFlags = 0;
+	return (b3SharedMemoryCommandHandle)command;
+}
+
+/* Kaedenn 2019/10/18 */
+B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugResetButton(b3PhysicsClientHandle physClient, int debugItemUniqueId)
+{
+	PhysicsClient* cl = (PhysicsClient*)physClient;
+	b3Assert(cl);
+	b3Assert(cl->canSubmitCommand());
+	struct SharedMemoryCommand* command = cl->getAvailableSharedMemoryCommand();
+	b3Assert(command);
+	command->m_type = CMD_USER_DEBUG_DRAW;
+	command->m_updateFlags = USER_DEBUG_RESET_BUTTON;
+	command->m_userDebugDrawArgs.m_itemUniqueId = debugItemUniqueId;
 	command->m_userDebugDrawArgs.m_parentObjectUniqueId = -1;
 	command->m_userDebugDrawArgs.m_optionFlags = 0;
 	return (b3SharedMemoryCommandHandle)command;

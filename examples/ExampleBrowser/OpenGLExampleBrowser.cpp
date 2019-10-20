@@ -120,8 +120,8 @@ static SharedMemoryInterface* sSharedMem = 0;
 static const char* startFileName = "0_Bullet3Demo.txt";
 static const char* startSaveFileName = "0_Bullet3Demo.bullet";
 static char saveFileName[1024] = {0};
-static char staticPngFileName[1024];
-//static GwenUserInterface* gui  = 0;
+static char staticPngFileName[1024] = {0};
+//static GwenUserInterface* gui = 0;
 static GwenUserInterface* gui2 = 0;
 static int sCurrentDemoIndex = -1;
 static int sCurrentHightlighted = 0;
@@ -132,7 +132,7 @@ static bool gAllowRetina = true;
 static bool gDisableDemoSelection = false;
 static int gRenderDevice = -1;
 static int gWindowBackend = 0;
-static class ExampleEntries* gAllExamples = 0;
+static ExampleEntries* gAllExamples = 0;
 static bool sUseOpenGL2 = false;
 
 #ifndef USE_OPENGL3
@@ -185,6 +185,7 @@ void deleteDemo()
 	}
 }
 
+char* gPngFilePrefix = NULL;
 const char* gPngFileName = 0;
 int gPngSkipFrames = 0;
 
@@ -724,6 +725,7 @@ void quitCallback()
 	s_window->setRequestExit();
 }
 
+/* Kaedenn 2019/09/29 */
 void saveCallback()
 {
 	const char* filePath = saveFileName;
@@ -1187,6 +1189,9 @@ bool OpenGLExampleBrowser::init(int argc, char* argv[])
 		pauseSimulation = true;
 	}
 
+	/* Kaedenn 2019/10/13 */
+	args.GetCmdLineArgument("png_prefix", gPngFilePrefix);
+
 	char* savePath = NULL;
 	args.GetCmdLineArgument("save_bullet", savePath);
 	if (savePath && strlen(savePath) > 0) {
@@ -1269,8 +1274,12 @@ void OpenGLExampleBrowser::update(float deltaTime)
 			//printf("gPngFileName=%s\n",gPngFileName);
 			static int s_frameCount = 0;
 
-			sprintf(staticPngFileName, "%s%d.png", gPngFileName, s_frameCount++);
-			//b3Printf("Made screenshot %s",staticPngFileName);
+			if (gPngFilePrefix) {
+				sprintf(staticPngFileName, "%s%s-%d.png", gPngFilePrefix, gPngFileName, s_frameCount++);
+			} else {
+				sprintf(staticPngFileName, "%s-%d.png", gPngFileName, s_frameCount++);
+			}
+			b3Printf("Made screenshot %s",staticPngFileName);
 			s_app->dumpNextFrameToPng(staticPngFileName);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}

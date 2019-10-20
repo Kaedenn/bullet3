@@ -119,7 +119,7 @@ extern "C"
 	///give a unique body index (after loading the body) return the number of joints.
 	B3_SHARED_API int b3GetNumJoints(b3PhysicsClientHandle physClient, int bodyUniqueId);
 	  ///give a unique body index (after loading the body) return the number of degrees of freedom (DoF).
-        B3_SHARED_API int b3GetNumDofs(b3PhysicsClientHandle physClient, int bodyUniqueId);
+	B3_SHARED_API int b3GetNumDofs(b3PhysicsClientHandle physClient, int bodyUniqueId);
 	
 	///compute the number of degrees of freedom for this body.
 	///Return -1 for unsupported spherical joint, -2 for unsupported planar joint.
@@ -231,9 +231,12 @@ extern "C"
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadParameter(b3PhysicsClientHandle physClient, int debugItemUniqueId);
 	B3_SHARED_API int b3GetStatusDebugParameterValue(b3SharedMemoryStatusHandle statusHandle, double* paramValue);
 
-  /* Kaedenn 2019/09/10 */
+	/* Kaedenn 2019/09/10 */
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugAddButton(b3PhysicsClientHandle physClient, const char* txt, double startValue);
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugReadButton(b3PhysicsClientHandle physClient, int debugItemUniqueId);
+
+	/* Kaedenn 2019/10/18 */
+	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugResetButton(b3PhysicsClientHandle physClient, int debugItemUniqueId);
 
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugDrawRemove(b3PhysicsClientHandle physClient, int debugItemUniqueId);
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitUserDebugDrawRemoveAll(b3PhysicsClientHandle physClient);
@@ -360,6 +363,9 @@ extern "C"
 	B3_SHARED_API int b3PhysicsParameterSetConstraintSolverType(b3SharedMemoryCommandHandle commandHandle, int constraintSolverType);
 	B3_SHARED_API int b3PhysicsParameterSetMinimumSolverIslandSize(b3SharedMemoryCommandHandle commandHandle, int minimumSolverIslandSize);
 	B3_SHARED_API int b3PhysicsParamSetSolverAnalytics(b3SharedMemoryCommandHandle commandHandle, int reportSolverAnalytics);
+
+	/* Kaedenn 2019/10/13 */
+	B3_SHARED_API int b3PhysicsParamSetVerboseMode(b3SharedMemoryCommandHandle commandHandle, int verboseMode);
 	
 	B3_SHARED_API b3SharedMemoryCommandHandle b3InitRequestPhysicsParamCommand(b3PhysicsClientHandle physClient);
 	B3_SHARED_API int b3GetStatusPhysicsSimulationParameters(b3SharedMemoryStatusHandle statusHandle, struct b3PhysicsSimulationParameters* params);

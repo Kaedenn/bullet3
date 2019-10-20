@@ -483,7 +483,9 @@ enum EnumSimParamUpdateFlags
 	SIM_PARAM_CONSTRAINT_MIN_SOLVER_ISLAND_SIZE = 1 << 25,
 	SIM_PARAM_REPORT_CONSTRAINT_SOLVER_ANALYTICS = 1 << 26,
 	SIM_PARAM_UPDATE_WARM_STARTING_FACTOR = 1 << 27,
-        
+
+	/* Kaedenn 2019/10/13 */
+	SIM_PARAM_UPDATE_VERBOSE_MODE = 1 << 28
 };
 
 enum EnumLoadSoftBodyUpdateFlags
@@ -493,7 +495,7 @@ enum EnumLoadSoftBodyUpdateFlags
 	LOAD_SOFT_BODY_UPDATE_MASS = 4,
 	LOAD_SOFT_BODY_UPDATE_COLLISION_MARGIN = 8,
 	LOAD_SOFT_BODY_INITIAL_POSITION = 16,
-        LOAD_SOFT_BODY_INITIAL_ORIENTATION = 32
+	LOAD_SOFT_BODY_INITIAL_ORIENTATION = 32
 };
 
 enum EnumSimParamInternalSimFlags
@@ -511,7 +513,7 @@ struct LoadSoftBodyArgs
 	double m_mass;
 	double m_collisionMargin;
 	double m_initialPosition[3];
-        double m_initialOrientation[4];
+	double m_initialOrientation[4];
 };
 
 struct b3LoadSoftBodyResultArgs
@@ -798,9 +800,11 @@ enum EnumUserDebugDrawFlags
 	USER_DEBUG_HAS_TEXT_ORIENTATION = 512,
 	USER_DEBUG_HAS_PARENT_OBJECT = 1024,
 	USER_DEBUG_HAS_REPLACE_ITEM_UNIQUE_ID = 2048,
-    /* Kaedenn 2019/09/09 */
-    USER_DEBUG_ADD_BUTTON = 4096,
-    USER_DEBUG_READ_BUTTON = 8192,
+	/* Kaedenn 2019/09/09 */
+	USER_DEBUG_ADD_BUTTON = 4096,
+	USER_DEBUG_READ_BUTTON = 8192,
+	/* Kaedenn 2019/10/17 */
+	USER_DEBUG_RESET_BUTTON = 16384
 };
 
 struct UserDebugDrawArgs
@@ -889,16 +893,16 @@ struct VRCameraState
 struct StateLoggingRequest
 {
 	char m_fileName[MAX_FILENAME_LENGTH];
-	int m_logType;           //Minitaur, generic robot, VR states, contact points
-	int m_numBodyUniqueIds;  ////only if STATE_LOGGING_FILTER_OBJECT_UNIQUE_ID flag is set
+	int m_logType;			//Minitaur, generic robot, VR states, contact points
+	int m_numBodyUniqueIds;	////only if STATE_LOGGING_FILTER_OBJECT_UNIQUE_ID flag is set
 	int m_bodyUniqueIds[MAX_SDF_BODIES];
 	int m_loggingUniqueId;
 	int m_maxLogDof;
-	int m_linkIndexA;        // only if STATE_LOGGING_FILTER_LINK_INDEX_A flag is set
-	int m_linkIndexB;        // only if STATE_LOGGING_FILTER_LINK_INDEX_B flag is set
-	int m_bodyUniqueIdA;     // only if STATE_LOGGING_FILTER_BODY_UNIQUE_ID_A flag is set
-	int m_bodyUniqueIdB;     // only if STATE_LOGGING_FILTER_BODY_UNIQUE_ID_B flag is set
-	int m_deviceFilterType;  //user to select (filter) which VR devices to log
+	int m_linkIndexA;		// only if STATE_LOGGING_FILTER_LINK_INDEX_A flag is set
+	int m_linkIndexB;		// only if STATE_LOGGING_FILTER_LINK_INDEX_B flag is set
+	int m_bodyUniqueIdA;	// only if STATE_LOGGING_FILTER_BODY_UNIQUE_ID_A flag is set
+	int m_bodyUniqueIdB;	// only if STATE_LOGGING_FILTER_BODY_UNIQUE_ID_B flag is set
+	int m_deviceFilterType;	//user to select (filter) which VR devices to log
 	int m_logFlags;
 };
 

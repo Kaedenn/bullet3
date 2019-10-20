@@ -15,6 +15,8 @@ GWEN_CONTROL_CONSTRUCTOR(MenuItem)
 {
 	m_Menu = NULL;
 	m_bOnStrip = false;
+	m_bCheckable = false;
+	m_bChecked = false;
 	m_SubmenuArrow = NULL;
 	SetTabable(false);
 	SetCheckable(false);

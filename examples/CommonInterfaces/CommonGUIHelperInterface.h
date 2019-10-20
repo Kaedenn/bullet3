@@ -115,6 +115,8 @@ struct GUIHelperInterface
 	/* Kaedenn 2019/09/09 */
 	virtual int addUserDebugButton(const char* txt, bool isTrigger, bool initialState) { return -1; };
 	virtual int readUserDebugButton(int itemUniqueId, double* value) { return 0; }
+	/* Kaedenn 2019/10/18 */
+	virtual int resetUserDebugButton(int itemUniqueId) { return 0; }
 
 	virtual void removeUserDebugItem(int debugItemUniqueId){};
 	virtual void removeAllUserDebugItems(){};
