@@ -86,6 +86,7 @@ struct btSparseSdf
 	{
 		//avoid a crash due to running out of memory, so clamp the maximum number of cells allocated
 		//if this limit is reached, the SDF is reset (at the cost of some performance during the reset)
+		puid = ncells = nprobes = nqueries = 0;
 		m_clampCells = clampCells;
 		cells.resize(hashsize, 0);
         m_defaultVoxelsz = 0.25;
