@@ -5394,8 +5394,8 @@ bool PhysicsServerCommandProcessor::processUserDebugDrawCommand(const struct Sha
 	{
 		int uid = m_data->m_guiHelper->addUserDebugButton(
 			clientCmd.m_userDebugDrawArgs.m_text,
-			false /* isTrigger */,
-			false /* initialState */);
+			(clientCmd.m_userDebugDrawArgs.m_optionFlags & 1) == 1,
+			(int)clientCmd.m_userDebugDrawArgs.m_startValue);
 		serverCmd.m_userDebugDrawArgs.m_debugItemUniqueId = uid;
 		serverCmd.m_type = CMD_USER_DEBUG_DRAW_COMPLETED;
 	}
