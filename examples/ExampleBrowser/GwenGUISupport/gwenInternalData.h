@@ -37,6 +37,8 @@ struct GwenInternalData
 	Gwen::Controls::Canvas* pCanvas;
 	//GLPrimitiveRenderer* m_primRenderer;
 	Gwen::Controls::TabButton* m_demoPage;
+	/* Kaedenn 2019/10/25 */
+	Gwen::Controls::ScrollControl* m_windowLeft;
 	Gwen::Controls::TabButton* m_explorerPage;
 	Gwen::Controls::TreeControl* m_explorerTreeCtrl;
 	Gwen::Controls::MenuItem* m_viewMenu;

@@ -410,6 +410,7 @@ void btUpdateInProcessExampleBrowserMainThread(btInProcessExampleBrowserMainThre
 	data->m_exampleBrowser->updateGraphics();
 	data->m_exampleBrowser->update(deltaTimeInSeconds);
 }
+
 void btShutDownExampleBrowserMainThread(btInProcessExampleBrowserMainThreadInternalData* data)
 {
 	data->m_exampleBrowser->setSharedMemoryInterface(0);

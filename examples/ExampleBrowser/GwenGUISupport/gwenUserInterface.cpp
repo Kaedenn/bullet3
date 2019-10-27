@@ -350,6 +350,8 @@ void GwenUserInterface::init(int width, int height, Gwen::Renderer::Base* render
 	//windowLeft->SetClosable(false);
 	//	windowLeft->SetShouldDrawBackground(true);
 	windowLeft->SetTabable(true);
+	/* Kaedenn 2019/10/25 */
+	m_data->m_windowLeft = windowLeft;
 
 	Gwen::Controls::TabControl* explorerTab = new Gwen::Controls::TabControl(windowLeft);
 
