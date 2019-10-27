@@ -2925,7 +2925,7 @@ bool PhysicsServerCommandProcessor::processImportedObjects(const char* fileName,
 	rootTrans.setIdentity();
 	if (m_data->m_verboseOutput)
 	{
-		b3Printf("loaded %s OK!", fileName);
+		b3Printf("processImportedObjects(\"%s\", \"%s\", %d, %d, %d, u2b) loaded OK!", fileName, bufferServerToClient, bufferSizeInBytes, (int)useMultiBody, flags);
 	}
 	SaveWorldObjectData sd;
 	sd.m_fileName = fileName;
@@ -3424,9 +3424,9 @@ int PhysicsServerCommandProcessor::createBodyInfoStream(int bodyUniqueId, char* 
 			streamSizeInBytes = ser.getCurrentBufferSize();
 		}
 #ifndef SKIP_SOFT_BODY_MULTI_BODY_DYNAMICS_WORLD
-	else if(bodyHandle->m_softBody){
-	//minimum serialization, registerNameForPointer
-	btSoftBody* sb = bodyHandle->m_softBody;
+	else if(bodyHandle->m_softBody) {
+		//minimum serialization, registerNameForPointer
+		btSoftBody* sb = bodyHandle->m_softBody;
 		btDefaultSerializer ser(bufferSizeInBytes, (unsigned char*)bufferServerToClient);
 
 		ser.startSerialization();
@@ -7264,61 +7264,61 @@ bool PhysicsServerCommandProcessor::processRequestActualStateCommand(const struc
 		hasStatus = true;
 	}
 #ifndef SKIP_SOFT_BODY_MULTI_BODY_DYNAMICS_WORLD
-		else if (body && body->m_softBody)
-		{
-		  btSoftBody* sb = body->m_softBody;
-		  SharedMemoryStatus& serverCmd = serverStatusOut;
-		  serverCmd.m_type = CMD_ACTUAL_STATE_UPDATE_COMPLETED;
-		  serverCmd.m_sendActualStateArgs.m_bodyUniqueId = bodyUniqueId;
-		  serverCmd.m_sendActualStateArgs.m_numLinks = 0;
-					serverCmd.m_numDataStreamBytes = sizeof(SendActualStateSharedMemoryStorage);
-		  serverCmd.m_sendActualStateArgs.m_stateDetails = 0;
+	else if (body && body->m_softBody)
+	{
+		btSoftBody* sb = body->m_softBody;
+		SharedMemoryStatus& serverCmd = serverStatusOut;
+		serverCmd.m_type = CMD_ACTUAL_STATE_UPDATE_COMPLETED;
+		serverCmd.m_sendActualStateArgs.m_bodyUniqueId = bodyUniqueId;
+		serverCmd.m_sendActualStateArgs.m_numLinks = 0;
+		serverCmd.m_numDataStreamBytes = sizeof(SendActualStateSharedMemoryStorage);
+		serverCmd.m_sendActualStateArgs.m_stateDetails = 0;
 
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[0] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[0] =
 			  body->m_rootLocalInertialFrame.getOrigin()[0];
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[1] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[1] =
 			  body->m_rootLocalInertialFrame.getOrigin()[1];
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[2] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[2] =
 			  body->m_rootLocalInertialFrame.getOrigin()[2];
 
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[3] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[3] =
 			  body->m_rootLocalInertialFrame.getRotation()[0];
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[4] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[4] =
 			  body->m_rootLocalInertialFrame.getRotation()[1];
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[5] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[5] =
 			  body->m_rootLocalInertialFrame.getRotation()[2];
-		  serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[6] =
+		serverCmd.m_sendActualStateArgs.m_rootLocalInertialFrame[6] =
 			  body->m_rootLocalInertialFrame.getRotation()[3];
 
-		  btTransform tr = sb->getWorldTransform();
-		  //base position in world space, cartesian
-		  stateDetails->m_actualStateQ[0] = tr.getOrigin()[0];
-		  stateDetails->m_actualStateQ[1] = tr.getOrigin()[1];
-		  stateDetails->m_actualStateQ[2] = tr.getOrigin()[2];
+		btTransform tr = sb->getWorldTransform();
+		//base position in world space, cartesian
+		stateDetails->m_actualStateQ[0] = tr.getOrigin()[0];
+		stateDetails->m_actualStateQ[1] = tr.getOrigin()[1];
+		stateDetails->m_actualStateQ[2] = tr.getOrigin()[2];
 
-		  //base orientation, quaternion x,y,z,w, in world space, cartesian
-		  stateDetails->m_actualStateQ[3] = tr.getRotation()[0];
-		  stateDetails->m_actualStateQ[4] = tr.getRotation()[1];
-		  stateDetails->m_actualStateQ[5] = tr.getRotation()[2];
-		  stateDetails->m_actualStateQ[6] = tr.getRotation()[3];
+		//base orientation, quaternion x,y,z,w, in world space, cartesian
+		stateDetails->m_actualStateQ[3] = tr.getRotation()[0];
+		stateDetails->m_actualStateQ[4] = tr.getRotation()[1];
+		stateDetails->m_actualStateQ[5] = tr.getRotation()[2];
+		stateDetails->m_actualStateQ[6] = tr.getRotation()[3];
 
-		  int totalDegreeOfFreedomQ = 7;  //pos + quaternion
-		  int totalDegreeOfFreedomU = 6;  //3 linear and 3 angular DOF
+		int totalDegreeOfFreedomQ = 7;  //pos + quaternion
+		int totalDegreeOfFreedomU = 6;  //3 linear and 3 angular DOF
 
-		  serverCmd.m_sendActualStateArgs.m_numDegreeOfFreedomQ = totalDegreeOfFreedomQ;
-		  serverCmd.m_sendActualStateArgs.m_numDegreeOfFreedomU = totalDegreeOfFreedomU;
+		serverCmd.m_sendActualStateArgs.m_numDegreeOfFreedomQ = totalDegreeOfFreedomQ;
+		serverCmd.m_sendActualStateArgs.m_numDegreeOfFreedomU = totalDegreeOfFreedomU;
 
-		  hasStatus = true;
-		}
+		hasStatus = true;
+	}
 #endif
-		else
-		{
-		  //b3Warning("Request state but no multibody or rigid body available");
-		  SharedMemoryStatus& serverCmd = serverStatusOut;
-		  serverCmd.m_type = CMD_ACTUAL_STATE_UPDATE_FAILED;
-		  hasStatus = true;
-		}
-		return hasStatus;
+	else
+	{
+		//b3Warning("Request state but no multibody or rigid body available");
+		SharedMemoryStatus& serverCmd = serverStatusOut;
+		serverCmd.m_type = CMD_ACTUAL_STATE_UPDATE_FAILED;
+		hasStatus = true;
+	}
+	return hasStatus;
 }
 
 bool PhysicsServerCommandProcessor::processRequestContactpointInformationCommand(const struct SharedMemoryCommand& clientCmd, struct SharedMemoryStatus& serverStatusOut, char* bufferServerToClient, int bufferSizeInBytes)
@@ -7991,7 +7991,7 @@ bool PhysicsServerCommandProcessor::processLoadSoftBodyCommand(const struct Shar
 	const LoadSoftBodyArgs& loadSoftBodyArgs = clientCmd.m_loadSoftBodyArguments;
 	if (m_data->m_verboseOutput)
 	{
-		b3Printf("Processed CMD_LOAD_SOFT_BODY:%s", loadSoftBodyArgs.m_fileName);
+		b3Printf("Processing CMD_LOAD_SOFT_BODY: %s", loadSoftBodyArgs.m_fileName);
 	}
 	btAssert((clientCmd.m_updateFlags & LOAD_SOFT_BODY_FILE_NAME) != 0);
 	btAssert(loadSoftBodyArgs.m_fileName);

@@ -28,10 +28,10 @@ struct DepthShader : public IShader
 	Matrix& m_lightModelView;
 	float m_lightDistance;
 
-	mat<2, 3, float> varying_uv;   // triangle uv coordinates, written by the vertex shader, read by the fragment shader
-	mat<4, 3, float> varying_tri;  // triangle coordinates (clip coordinates), written by VS, read by FS
+	mat<2, 3, float> varying_uv;	// triangle uv coordinates, written by the vertex shader, read by the fragment shader
+	mat<4, 3, float> varying_tri;	// triangle coordinates (clip coordinates), written by VS, read by FS
 
-	mat<3, 3, float> varying_nrm;  // normal per vertex to be interpolated by FS
+	mat<3, 3, float> varying_nrm;	// normal per vertex to be interpolated by FS
 
 	DepthShader(Model* model, Matrix& lightModelView, Matrix& projectionMat, Matrix& modelMat, Vec3f localScaling, float lightDistance)
 		: m_model(model),
@@ -94,11 +94,11 @@ struct Shader : public IShader
 
 	int m_index;
 
-	mat<2, 3, float> varying_uv;   // triangle uv coordinates, written by the vertex shader, read by the fragment shader
-	mat<4, 3, float> varying_tri;  // triangle coordinates (clip coordinates), written by VS, read by FS
+	mat<2, 3, float> varying_uv;	// triangle uv coordinates, written by the vertex shader, read by the fragment shader
+	mat<4, 3, float> varying_tri;	// triangle coordinates (clip coordinates), written by VS, read by FS
 	mat<4, 3, float> varying_tri_light_view;
-	mat<3, 3, float> varying_nrm;  // normal per vertex to be interpolated by FS
-	mat<4, 3, float> world_tri;    // model triangle coordinates in the world space used for backface culling, written by VS
+	mat<3, 3, float> varying_nrm;	// normal per vertex to be interpolated by FS
+	mat<4, 3, float> world_tri;		// model triangle coordinates in the world space used for backface culling, written by VS
 
 	Shader(Model* model, Vec3f light_dir_local, Vec3f light_color, Matrix& modelView, Matrix& lightModelView, Matrix& projectionMat, Matrix& modelMat, Matrix& viewportMat, Vec3f localScaling, const Vec4f& colorRGBA, int width, int height, b3AlignedObjectArray<float>* shadowBuffer, float ambient_coefficient = 0.6, float diffuse_coefficient = 0.35, float specular_coefficient = 0.05)
 		: m_model(model),
@@ -155,18 +155,17 @@ struct Shader : public IShader
 
 		float index_x = b3Max(float(0.0), b3Min(float(m_width - 1), p[0]));
 		float index_y = b3Max(float(0.0), b3Min(float(m_height - 1), p[1]));
-		int idx = int(index_x) + int(index_y) * m_width;                       // index in the shadowbuffer array
-		float shadow = 0.8 + 0.2 * (m_shadowBuffer->at(idx) < -depth + 0.05);  // magic coeff to avoid z-fighting
+		int idx = int(index_x) + int(index_y) * m_width;						// index in the shadowbuffer array
+		float shadow = 0.8 + 0.2 * (m_shadowBuffer->at(idx) < -depth + 0.05);	// magic coeff to avoid z-fighting
 
 		Vec3f bn = (varying_nrm * bar).normalize();
 		Vec2f uv = varying_uv * bar;
 
 		Vec3f reflection_direction = (bn * (bn * m_light_dir_local * 2.f) - m_light_dir_local).normalize();
-                float specular = std::pow(b3Max(reflection_direction.z, 0.f),
-                                          m_model->specular(uv));
-                float diffuse = b3Max(0.f, bn * m_light_dir_local);
+		float specular = std::pow(b3Max(reflection_direction.z, 0.f), m_model->specular(uv));
+		float diffuse = b3Max(0.f, bn * m_light_dir_local);
 
-                color = m_model->diffuse(uv);
+		color = m_model->diffuse(uv);
 		color[0] *= m_colorRGBA[0];
 		color[1] *= m_colorRGBA[1];
 		color[2] *= m_colorRGBA[2];
@@ -274,7 +273,7 @@ void TinyRenderObjectData::loadModel(const char* fileName, CommonFileIOInterface
 	char relativeFileName[1024];
 	if (!fileIO->findResourcePath(fileName, relativeFileName, 1024))
 	{
-		printf("Cannot find file %s\n", fileName);
+		fprintf(stderr, "ERROR: Cannot find file %s\n", fileName);
 	}
 	else
 	{
@@ -307,7 +306,7 @@ void TinyRenderObjectData::registerMeshShape(const float* vertices, int numVerti
 			{
 				m_model->loadDiffuseTexture(relativeFileName);
 			}
-             */
+			*/
 		}
 		{
 			B3_PROFILE("reserveMemory");
