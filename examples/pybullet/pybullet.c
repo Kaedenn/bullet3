@@ -79,8 +79,8 @@
 #endif
 
 /* Exception types */
-static PyObject* BulletError;
-static PyObject* BulletNotConnectedError;
+static PyObject* BulletError = NULL;
+static PyObject* BulletNotConnectedError = NULL;
 
 #define B3_MAX_NUM_END_EFFECTORS 128
 #define MAX_PHYSICS_CLIENTS 1024
@@ -148,12 +148,6 @@ static int getIntFromSequence(PyObject* seq, int index)
 	return v;
 }
 
-// internal function to set a float matrix[16]
-// used to initialize camera position with
-// a view and projection matrix in renderImage()
-//
-// // Args:
-//  matrix - float[16] which will be set by values from objMat
 static int setMatrix(PyObject* objMat, float matrix[16])
 {
 	int i, len;
@@ -181,9 +175,6 @@ static int setMatrix(PyObject* objMat, float matrix[16])
 	return 0;
 }
 
-/* Internal functions to set the C array values from a PyObject */
-
-//  vector - float[3] which will be set by values from objMat
 static int setVector(PyObject* objVec, float vector[3])
 {
 	int i, len;
@@ -212,7 +203,6 @@ static int setVector(PyObject* objVec, float vector[3])
 	return 0;
 }
 
-//  vector - double[2] which will be set by values from obVec
 static int setVector2d(PyObject* obVec, double vector[2])
 {
 	int i, len;
@@ -240,7 +230,6 @@ static int setVector2d(PyObject* obVec, double vector[2])
 	return 0;
 }
 
-//  vector - double[3] which will be set by values from obVec
 static int setVector3d(PyObject* obVec, double vector[3])
 {
 	int i, len;
@@ -268,7 +257,6 @@ static int setVector3d(PyObject* obVec, double vector[3])
 	return 0;
 }
 
-//  vector - double[4] which will be set by values from obVec
 static int setVector4d(PyObject* obVec, double vector[4])
 {
 	int i, len;
@@ -329,6 +317,396 @@ static int getVector4FromSequence(PyObject* seq, int index, double vec[4])
 		setVector4d(item, vec);
 	}
 	return v;
+}
+
+static int getBaseVelocity(int bodyUniqueId, double baseLinearVelocity[3], double baseAngularVelocity[3], b3PhysicsClientHandle sm)
+{
+	baseLinearVelocity[0] = 0.;
+	baseLinearVelocity[1] = 0.;
+	baseLinearVelocity[2] = 0.;
+
+	baseAngularVelocity[0] = 0.;
+	baseAngularVelocity[1] = 0.;
+	baseAngularVelocity[2] = 0.;
+
+	if (0 == sm)
+	{
+		PyErr_SetString(BulletNotConnectedError, "Not connected to physics server.");
+		return 0;
+	}
+
+	{
+		{
+			b3SharedMemoryCommandHandle cmd_handle =
+				b3RequestActualStateCommandInit(sm, bodyUniqueId);
+			b3SharedMemoryStatusHandle status_handle =
+				b3SubmitClientCommandAndWaitStatus(sm, cmd_handle);
+
+			const int status_type = b3GetStatusType(status_handle);
+			const double* actualStateQdot;
+			// const double* jointReactionForces[];
+
+			if (status_type != CMD_ACTUAL_STATE_UPDATE_COMPLETED)
+			{
+				PyErr_SetString(BulletError, "getBaseVelocity failed.");
+				return 0;
+			}
+
+			b3GetStatusActualState(
+				status_handle, 0 /* body_unique_id */,
+				0 /* num_degree_of_freedom_q */, 0 /* num_degree_of_freedom_u */,
+				0 /*root_local_inertial_frame*/, 0,
+				&actualStateQdot, 0 /* joint_reaction_forces */);
+
+			// printf("joint reaction forces=");
+			// for (i=0; i < (sizeof(jointReactionForces)/sizeof(double)); i++) {
+			//   printf("%f ", jointReactionForces[i]);
+			// }
+			// now, position x,y,z = actualStateQ[0],actualStateQ[1],actualStateQ[2]
+			// and orientation x,y,z,w =
+			// actualStateQ[3],actualStateQ[4],actualStateQ[5],actualStateQ[6]
+			baseLinearVelocity[0] = actualStateQdot[0];
+			baseLinearVelocity[1] = actualStateQdot[1];
+			baseLinearVelocity[2] = actualStateQdot[2];
+
+			baseAngularVelocity[0] = actualStateQdot[3];
+			baseAngularVelocity[1] = actualStateQdot[4];
+			baseAngularVelocity[2] = actualStateQdot[5];
+		}
+	}
+	return 1;
+}
+
+// Internal function used to get the base position and orientation
+// Orientation is returned in quaternions
+static int getBasePositionAndOrientation(int bodyUniqueId, double basePosition[3], double baseOrientation[4], b3PhysicsClientHandle sm)
+{
+	basePosition[0] = 0.;
+	basePosition[1] = 0.;
+	basePosition[2] = 0.;
+
+	baseOrientation[0] = 0.;
+	baseOrientation[1] = 0.;
+	baseOrientation[2] = 0.;
+	baseOrientation[3] = 1.;
+
+	if (0 == sm)
+	{
+		PyErr_SetString(BulletNotConnectedError, "Not connected to physics server.");
+		return 0;
+	}
+
+	{
+		{
+			b3SharedMemoryCommandHandle cmd_handle =
+				b3RequestActualStateCommandInit(sm, bodyUniqueId);
+			b3SharedMemoryStatusHandle status_handle =
+				b3SubmitClientCommandAndWaitStatus(sm, cmd_handle);
+
+			const int status_type = b3GetStatusType(status_handle);
+			const double* actualStateQ;
+			// const double* jointReactionForces[];
+
+			if (status_type != CMD_ACTUAL_STATE_UPDATE_COMPLETED)
+			{
+				PyErr_SetString(BulletError, "getBasePositionAndOrientation failed.");
+				return 0;
+			}
+
+			b3GetStatusActualState(
+				status_handle, 0 /* body_unique_id */,
+				0 /* num_degree_of_freedom_q */, 0 /* num_degree_of_freedom_u */,
+				0 /*root_local_inertial_frame*/, &actualStateQ,
+				0 /* actual_state_q_dot */, 0 /* joint_reaction_forces */);
+
+			// printf("joint reaction forces=");
+			// for (i=0; i < (sizeof(jointReactionForces)/sizeof(double)); i++) {
+			//   printf("%f ", jointReactionForces[i]);
+			// }
+			// now, position x,y,z = actualStateQ[0],actualStateQ[1],actualStateQ[2]
+			// and orientation x,y,z,w =
+			// actualStateQ[3],actualStateQ[4],actualStateQ[5],actualStateQ[6]
+			basePosition[0] = actualStateQ[0];
+			basePosition[1] = actualStateQ[1];
+			basePosition[2] = actualStateQ[2];
+
+			baseOrientation[0] = actualStateQ[3];
+			baseOrientation[1] = actualStateQ[4];
+			baseOrientation[2] = actualStateQ[5];
+			baseOrientation[3] = actualStateQ[6];
+		}
+	}
+	return 1;
+}
+
+static int extractVertices(PyObject* verticesObj, double* vertices, int maxNumVertices)
+{
+	int numVerticesOut = 0;
+
+	if (verticesObj)
+	{
+		PyObject* seqVerticesObj = PySequence_Fast(verticesObj, "expected a sequence of vertex positions");
+		if (seqVerticesObj)
+		{
+			int numVerticesSrc = PySequence_Size(seqVerticesObj);
+			{
+				int i;
+
+				if (numVerticesSrc > B3_MAX_NUM_VERTICES)
+				{
+					PyErr_SetString(BulletError, "Number of vertices exceeds the maximum.");
+					Py_DECREF(seqVerticesObj);
+					return 0;
+				}
+				for (i = 0; i < numVerticesSrc; i++)
+				{
+					PyObject* vertexObj = PySequence_GetItem(seqVerticesObj, i);
+					double vertex[3];
+					if (setVector3d(vertexObj, vertex))
+					{
+						if (vertices)
+						{
+							vertices[numVerticesOut * 3 + 0] = vertex[0];
+							vertices[numVerticesOut * 3 + 1] = vertex[1];
+							vertices[numVerticesOut * 3 + 2] = vertex[2];
+						}
+						numVerticesOut++;
+					}
+				}
+			}
+		}
+	}
+	return numVerticesOut;
+}
+
+static int extractUVs(PyObject* uvsObj, double* uvs, int maxNumVertices)
+{
+	int numUVOut = 0;
+
+	if (uvsObj)
+	{
+		PyObject* seqVerticesObj = PySequence_Fast(uvsObj, "expected a sequence of uvs");
+		if (seqVerticesObj)
+		{
+			int numVerticesSrc = PySequence_Size(seqVerticesObj);
+			{
+				int i;
+
+				if (numVerticesSrc > B3_MAX_NUM_VERTICES)
+				{
+					PyErr_SetString(BulletError, "Number of uvs exceeds the maximum.");
+					Py_DECREF(seqVerticesObj);
+					return 0;
+				}
+				for (i = 0; i < numVerticesSrc; i++)
+				{
+					PyObject* vertexObj = PySequence_GetItem(seqVerticesObj, i);
+					double uv[2];
+					if (setVector2d(vertexObj, uv))
+					{
+						if (uvs)
+						{
+							uvs[numUVOut * 2 + 0] = uv[0];
+							uvs[numUVOut * 2 + 1] = uv[1];
+						}
+						numUVOut++;
+					}
+				}
+			}
+		}
+	}
+	return numUVOut;
+}
+
+static int extractIndices(PyObject* indicesObj, int* indices, int maxNumIndices)
+{
+	int numIndicesOut = 0;
+
+	if (indicesObj)
+	{
+		PyObject* seqIndicesObj = PySequence_Fast(indicesObj, "expected a sequence of indices");
+		if (seqIndicesObj)
+		{
+			int numIndicesSrc = PySequence_Size(seqIndicesObj);
+			{
+				int i;
+
+				if (numIndicesSrc > B3_MAX_NUM_INDICES)
+				{
+					PyErr_SetString(BulletError, "Number of indices exceeds the maximum.");
+					Py_DECREF(seqIndicesObj);
+					return 0;
+				}
+				for (i = 0; i < numIndicesSrc; i++)
+				{
+					int index = getIntFromSequence(seqIndicesObj, i);
+					if (indices)
+					{
+						indices[numIndicesOut] = index;
+					}
+					numIndicesOut++;
+				}
+			}
+		}
+	}
+	return numIndicesOut;
+}
+
+static PyObject* convertContactPoint(struct b3ContactInformation* contactPointPtr)
+{
+	/*
+	 0	 int m_contactFlags;
+	 1	 int m_bodyUniqueIdA;
+	 2	 int m_bodyUniqueIdB;
+	 3	 int m_linkIndexA;
+	 4	 int m_linkIndexB;
+	 5	  double m_positionOnAInWS[3];//contact point location on object A,
+	 in world space coordinates
+	 6	  double m_positionOnBInWS[3];//contact point location on object
+	 A, in world space coordinates
+	 7	  double m_contactNormalOnBInWS[3];//the separating contact
+	 normal, pointing from object B towards object A
+	 8	  double m_contactDistance;//negative number is penetration, positive
+	 is distance.
+	 9	  double m_normalForce;
+	 10	 double m_linearFrictionForce1;
+	 11	 double double m_linearFrictionDirection1[3];
+	 12	 double m_linearFrictionForce2;
+	 13	 double double m_linearFrictionDirection2[3];
+	 */
+
+	int i;
+
+	PyObject* pyResultList = PyTuple_New(contactPointPtr->m_numContactPoints);
+	for (i = 0; i < contactPointPtr->m_numContactPoints; i++)
+	{
+		PyObject* contactObList = PyTuple_New(14);  // see above 10 fields
+		PyObject* item;
+		item =
+			PyInt_FromLong(contactPointPtr->m_contactPointData[i].m_contactFlags);
+		PyTuple_SetItem(contactObList, 0, item);
+		item = PyInt_FromLong(
+			contactPointPtr->m_contactPointData[i].m_bodyUniqueIdA);
+		PyTuple_SetItem(contactObList, 1, item);
+		item = PyInt_FromLong(
+			contactPointPtr->m_contactPointData[i].m_bodyUniqueIdB);
+		PyTuple_SetItem(contactObList, 2, item);
+		item =
+			PyInt_FromLong(contactPointPtr->m_contactPointData[i].m_linkIndexA);
+		PyTuple_SetItem(contactObList, 3, item);
+		item =
+			PyInt_FromLong(contactPointPtr->m_contactPointData[i].m_linkIndexB);
+		PyTuple_SetItem(contactObList, 4, item);
+
+		{
+			PyObject* posAObj = PyTuple_New(3);
+
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_positionOnAInWS[0]);
+			PyTuple_SetItem(posAObj, 0, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_positionOnAInWS[1]);
+			PyTuple_SetItem(posAObj, 1, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_positionOnAInWS[2]);
+			PyTuple_SetItem(posAObj, 2, item);
+
+			PyTuple_SetItem(contactObList, 5, posAObj);
+		}
+
+		{
+			PyObject* posBObj = PyTuple_New(3);
+
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_positionOnBInWS[0]);
+			PyTuple_SetItem(posBObj, 0, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_positionOnBInWS[1]);
+			PyTuple_SetItem(posBObj, 1, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_positionOnBInWS[2]);
+			PyTuple_SetItem(posBObj, 2, item);
+
+			PyTuple_SetItem(contactObList, 6, posBObj);
+		}
+
+		{
+			PyObject* normalOnB = PyTuple_New(3);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_contactNormalOnBInWS[0]);
+			PyTuple_SetItem(normalOnB, 0, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_contactNormalOnBInWS[1]);
+			PyTuple_SetItem(normalOnB, 1, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_contactNormalOnBInWS[2]);
+			PyTuple_SetItem(normalOnB, 2, item);
+			PyTuple_SetItem(contactObList, 7, normalOnB);
+		}
+
+		item = PyFloat_FromDouble(
+			contactPointPtr->m_contactPointData[i].m_contactDistance);
+		PyTuple_SetItem(contactObList, 8, item);
+		item = PyFloat_FromDouble(
+			contactPointPtr->m_contactPointData[i].m_normalForce);
+		PyTuple_SetItem(contactObList, 9, item);
+
+		item = PyFloat_FromDouble(
+			contactPointPtr->m_contactPointData[i].m_linearFrictionForce1);
+		PyTuple_SetItem(contactObList, 10, item);
+
+		{
+			PyObject* posAObj = PyTuple_New(3);
+
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection1[0]);
+			PyTuple_SetItem(posAObj, 0, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection1[1]);
+			PyTuple_SetItem(posAObj, 1, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection1[2]);
+			PyTuple_SetItem(posAObj, 2, item);
+			PyTuple_SetItem(contactObList, 11, posAObj);
+		}
+
+		item = PyFloat_FromDouble(
+			contactPointPtr->m_contactPointData[i].m_linearFrictionForce2);
+		PyTuple_SetItem(contactObList, 12, item);
+
+		{
+			PyObject* posAObj = PyTuple_New(3);
+
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection2[0]);
+			PyTuple_SetItem(posAObj, 0, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection2[1]);
+			PyTuple_SetItem(posAObj, 1, item);
+			item = PyFloat_FromDouble(
+				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection2[2]);
+			PyTuple_SetItem(posAObj, 2, item);
+			PyTuple_SetItem(contactObList, 13, posAObj);
+		}
+
+		PyTuple_SetItem(pyResultList, i, contactObList);
+	}
+	return pyResultList;
+}
+
+void b3pybulletExitFunc(void)
+{
+	/* To avoid memory leaks, disconnect all physics servers explicitly */
+	int i;
+	for (i = 0; i < MAX_PHYSICS_CLIENTS; i++)
+	{
+		if (sPhysicsClients1[i])
+		{
+			b3DisconnectSharedMemory(sPhysicsClients1[i]);
+			sPhysicsClients1[i] = 0;
+			sNumPhysicsClients--;
+		}
+	}
 }
 
 static PyObject* pybullet_stepSimulation(PyObject* self, PyObject* args, PyObject* kwargs)
@@ -667,21 +1045,6 @@ static PyObject* pybullet_disconnectPhysicsServer(PyObject* self, PyObject* args
 
 	Py_INCREF(Py_None);
 	return Py_None;
-}
-
-void b3pybulletExitFunc(void)
-{
-	/* To avoid memory leaks, disconnect all physics servers explicitly */
-	int i;
-	for (i = 0; i < MAX_PHYSICS_CLIENTS; i++)
-	{
-		if (sPhysicsClients1[i])
-		{
-			b3DisconnectSharedMemory(sPhysicsClients1[i]);
-			sPhysicsClients1[i] = 0;
-			sNumPhysicsClients--;
-		}
-	}
 }
 
 static PyObject* pybullet_isConnected(PyObject* self, PyObject* args, PyObject* kwargs)
@@ -2068,6 +2431,68 @@ static PyObject* pybullet_loadSoftBody(PyObject* self, PyObject* args, PyObject*
 	}
 	return PyLong_FromLong(bodyUniqueId);
 }
+
+static PyObject* pybullet_createSoftBody(PyObject* self, PyObject* args, PyObject* kwargs)
+{
+	/* TODO: Soft body creation API
+	 * btSoftBodyHelpers::CreateRope
+	 * btSoftBodyHelpers::CreatePatch
+	 * btSoftBodyHelpers::CreateEllipsoid
+	 * btSoftBodyHelpers::CreateFromTriMesh
+	 * btSoftBodyHelpers::CreateFromConvexHull
+	 * btSoftBodyHelpers::CreateFromTetGenData
+	 * btSoftBodyHelpers::CreateFromVtkFile
+	 */
+	PyObject* bodyConfig = NULL;
+	PyObject* position = NULL;
+	PyObject* orientation = NULL;
+	int physicsClientId = 0;
+	b3PhysicsClientHandle sm = 0;
+	static char* kwlist[] = {
+		"bodyConfig", "basePosition", "baseOrientation",
+		"physicsClientId", NULL
+	};
+
+	double basePosition[3] = {0, 0, 0};
+	double baseOrientation[4] = {0, 0, 0, 1};
+
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOi", kwlist, &bodyConfig, &position, &orientation, &physicsClientId))
+	{
+		return NULL;
+	}
+	if (position)
+	{
+		setVector3d(position, basePosition);
+	}
+	if (orientation)
+	{
+		setVector4d(orientation, baseOrientation);
+	}
+	sm = getPhysicsClient(physicsClientId);
+	if (sm == 0)
+	{
+		PyErr_SetString(BulletNotConnectedError, "Not connected to physics server.");
+		return NULL;
+	}
+
+	{
+		int szConfig = PySequence_Size(bodyConfig);
+		int i;
+		if (szConfig == 0)
+		{
+			PyErr_SetString(BulletError, "expected a non-empty body configuration object");
+			return NULL;
+		}
+		for (i = 0; i < szConfig; ++i)
+		{
+			/* TODO: Parse bodyConfig object */
+		}
+	}
+
+	PyErr_SetString(BulletError, "createSoftBody API not yet implemented.");
+	return NULL;
+}
+
 #endif
 
 // Reset the simulation to remove all loaded objects
@@ -3474,126 +3899,6 @@ static PyObject* pybullet_setDefaultContactERP(PyObject* self, PyObject* args, P
 
 	Py_INCREF(Py_None);
 	return Py_None;
-}
-
-static int getBaseVelocity(int bodyUniqueId, double baseLinearVelocity[3], double baseAngularVelocity[3], b3PhysicsClientHandle sm)
-{
-	baseLinearVelocity[0] = 0.;
-	baseLinearVelocity[1] = 0.;
-	baseLinearVelocity[2] = 0.;
-
-	baseAngularVelocity[0] = 0.;
-	baseAngularVelocity[1] = 0.;
-	baseAngularVelocity[2] = 0.;
-
-	if (0 == sm)
-	{
-		PyErr_SetString(BulletNotConnectedError, "Not connected to physics server.");
-		return 0;
-	}
-
-	{
-		{
-			b3SharedMemoryCommandHandle cmd_handle =
-				b3RequestActualStateCommandInit(sm, bodyUniqueId);
-			b3SharedMemoryStatusHandle status_handle =
-				b3SubmitClientCommandAndWaitStatus(sm, cmd_handle);
-
-			const int status_type = b3GetStatusType(status_handle);
-			const double* actualStateQdot;
-			// const double* jointReactionForces[];
-
-			if (status_type != CMD_ACTUAL_STATE_UPDATE_COMPLETED)
-			{
-				PyErr_SetString(BulletError, "getBaseVelocity failed.");
-				return 0;
-			}
-
-			b3GetStatusActualState(
-				status_handle, 0 /* body_unique_id */,
-				0 /* num_degree_of_freedom_q */, 0 /* num_degree_of_freedom_u */,
-				0 /*root_local_inertial_frame*/, 0,
-				&actualStateQdot, 0 /* joint_reaction_forces */);
-
-			// printf("joint reaction forces=");
-			// for (i=0; i < (sizeof(jointReactionForces)/sizeof(double)); i++) {
-			//   printf("%f ", jointReactionForces[i]);
-			// }
-			// now, position x,y,z = actualStateQ[0],actualStateQ[1],actualStateQ[2]
-			// and orientation x,y,z,w =
-			// actualStateQ[3],actualStateQ[4],actualStateQ[5],actualStateQ[6]
-			baseLinearVelocity[0] = actualStateQdot[0];
-			baseLinearVelocity[1] = actualStateQdot[1];
-			baseLinearVelocity[2] = actualStateQdot[2];
-
-			baseAngularVelocity[0] = actualStateQdot[3];
-			baseAngularVelocity[1] = actualStateQdot[4];
-			baseAngularVelocity[2] = actualStateQdot[5];
-		}
-	}
-	return 1;
-}
-
-// Internal function used to get the base position and orientation
-// Orientation is returned in quaternions
-static int getBasePositionAndOrientation(int bodyUniqueId, double basePosition[3], double baseOrientation[4], b3PhysicsClientHandle sm)
-{
-	basePosition[0] = 0.;
-	basePosition[1] = 0.;
-	basePosition[2] = 0.;
-
-	baseOrientation[0] = 0.;
-	baseOrientation[1] = 0.;
-	baseOrientation[2] = 0.;
-	baseOrientation[3] = 1.;
-
-	if (0 == sm)
-	{
-		PyErr_SetString(BulletNotConnectedError, "Not connected to physics server.");
-		return 0;
-	}
-
-	{
-		{
-			b3SharedMemoryCommandHandle cmd_handle =
-				b3RequestActualStateCommandInit(sm, bodyUniqueId);
-			b3SharedMemoryStatusHandle status_handle =
-				b3SubmitClientCommandAndWaitStatus(sm, cmd_handle);
-
-			const int status_type = b3GetStatusType(status_handle);
-			const double* actualStateQ;
-			// const double* jointReactionForces[];
-
-			if (status_type != CMD_ACTUAL_STATE_UPDATE_COMPLETED)
-			{
-				PyErr_SetString(BulletError, "getBasePositionAndOrientation failed.");
-				return 0;
-			}
-
-			b3GetStatusActualState(
-				status_handle, 0 /* body_unique_id */,
-				0 /* num_degree_of_freedom_q */, 0 /* num_degree_of_freedom_u */,
-				0 /*root_local_inertial_frame*/, &actualStateQ,
-				0 /* actual_state_q_dot */, 0 /* joint_reaction_forces */);
-
-			// printf("joint reaction forces=");
-			// for (i=0; i < (sizeof(jointReactionForces)/sizeof(double)); i++) {
-			//   printf("%f ", jointReactionForces[i]);
-			// }
-			// now, position x,y,z = actualStateQ[0],actualStateQ[1],actualStateQ[2]
-			// and orientation x,y,z,w =
-			// actualStateQ[3],actualStateQ[4],actualStateQ[5],actualStateQ[6]
-			basePosition[0] = actualStateQ[0];
-			basePosition[1] = actualStateQ[1];
-			basePosition[2] = actualStateQ[2];
-
-			baseOrientation[0] = actualStateQ[3];
-			baseOrientation[1] = actualStateQ[4];
-			baseOrientation[2] = actualStateQ[5];
-			baseOrientation[3] = actualStateQ[6];
-		}
-	}
-	return 1;
 }
 
 static PyObject* pybullet_getAABB(PyObject* self, PyObject* args, PyObject* kwargs)
@@ -7435,148 +7740,6 @@ static PyObject* pybullet_loadTexture(PyObject* self, PyObject* args, PyObject* 
 	return NULL;
 }
 
-static PyObject* convertContactPoint(struct b3ContactInformation* contactPointPtr)
-{
-	/*
-	 0	 int m_contactFlags;
-	 1	 int m_bodyUniqueIdA;
-	 2	 int m_bodyUniqueIdB;
-	 3	 int m_linkIndexA;
-	 4	 int m_linkIndexB;
-	 5	  double m_positionOnAInWS[3];//contact point location on object A,
-	 in world space coordinates
-	 6	  double m_positionOnBInWS[3];//contact point location on object
-	 A, in world space coordinates
-	 7	  double m_contactNormalOnBInWS[3];//the separating contact
-	 normal, pointing from object B towards object A
-	 8	  double m_contactDistance;//negative number is penetration, positive
-	 is distance.
-	 9	  double m_normalForce;
-	 10	 double m_linearFrictionForce1;
-	 11	 double double m_linearFrictionDirection1[3];
-	 12	 double m_linearFrictionForce2;
-	 13	 double double m_linearFrictionDirection2[3];
-	 */
-
-	int i;
-
-	PyObject* pyResultList = PyTuple_New(contactPointPtr->m_numContactPoints);
-	for (i = 0; i < contactPointPtr->m_numContactPoints; i++)
-	{
-		PyObject* contactObList = PyTuple_New(14);  // see above 10 fields
-		PyObject* item;
-		item =
-			PyInt_FromLong(contactPointPtr->m_contactPointData[i].m_contactFlags);
-		PyTuple_SetItem(contactObList, 0, item);
-		item = PyInt_FromLong(
-			contactPointPtr->m_contactPointData[i].m_bodyUniqueIdA);
-		PyTuple_SetItem(contactObList, 1, item);
-		item = PyInt_FromLong(
-			contactPointPtr->m_contactPointData[i].m_bodyUniqueIdB);
-		PyTuple_SetItem(contactObList, 2, item);
-		item =
-			PyInt_FromLong(contactPointPtr->m_contactPointData[i].m_linkIndexA);
-		PyTuple_SetItem(contactObList, 3, item);
-		item =
-			PyInt_FromLong(contactPointPtr->m_contactPointData[i].m_linkIndexB);
-		PyTuple_SetItem(contactObList, 4, item);
-
-		{
-			PyObject* posAObj = PyTuple_New(3);
-
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_positionOnAInWS[0]);
-			PyTuple_SetItem(posAObj, 0, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_positionOnAInWS[1]);
-			PyTuple_SetItem(posAObj, 1, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_positionOnAInWS[2]);
-			PyTuple_SetItem(posAObj, 2, item);
-
-			PyTuple_SetItem(contactObList, 5, posAObj);
-		}
-
-		{
-			PyObject* posBObj = PyTuple_New(3);
-
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_positionOnBInWS[0]);
-			PyTuple_SetItem(posBObj, 0, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_positionOnBInWS[1]);
-			PyTuple_SetItem(posBObj, 1, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_positionOnBInWS[2]);
-			PyTuple_SetItem(posBObj, 2, item);
-
-			PyTuple_SetItem(contactObList, 6, posBObj);
-		}
-
-		{
-			PyObject* normalOnB = PyTuple_New(3);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_contactNormalOnBInWS[0]);
-			PyTuple_SetItem(normalOnB, 0, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_contactNormalOnBInWS[1]);
-			PyTuple_SetItem(normalOnB, 1, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_contactNormalOnBInWS[2]);
-			PyTuple_SetItem(normalOnB, 2, item);
-			PyTuple_SetItem(contactObList, 7, normalOnB);
-		}
-
-		item = PyFloat_FromDouble(
-			contactPointPtr->m_contactPointData[i].m_contactDistance);
-		PyTuple_SetItem(contactObList, 8, item);
-		item = PyFloat_FromDouble(
-			contactPointPtr->m_contactPointData[i].m_normalForce);
-		PyTuple_SetItem(contactObList, 9, item);
-
-		item = PyFloat_FromDouble(
-			contactPointPtr->m_contactPointData[i].m_linearFrictionForce1);
-		PyTuple_SetItem(contactObList, 10, item);
-
-		{
-			PyObject* posAObj = PyTuple_New(3);
-
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection1[0]);
-			PyTuple_SetItem(posAObj, 0, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection1[1]);
-			PyTuple_SetItem(posAObj, 1, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection1[2]);
-			PyTuple_SetItem(posAObj, 2, item);
-			PyTuple_SetItem(contactObList, 11, posAObj);
-		}
-
-		item = PyFloat_FromDouble(
-			contactPointPtr->m_contactPointData[i].m_linearFrictionForce2);
-		PyTuple_SetItem(contactObList, 12, item);
-
-		{
-			PyObject* posAObj = PyTuple_New(3);
-
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection2[0]);
-			PyTuple_SetItem(posAObj, 0, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection2[1]);
-			PyTuple_SetItem(posAObj, 1, item);
-			item = PyFloat_FromDouble(
-				contactPointPtr->m_contactPointData[i].m_linearFrictionDirection2[2]);
-			PyTuple_SetItem(posAObj, 2, item);
-			PyTuple_SetItem(contactObList, 13, posAObj);
-		}
-
-		PyTuple_SetItem(pyResultList, i, contactObList);
-	}
-	return pyResultList;
-}
-
 static PyObject* pybullet_setCollisionFilterGroupMask(PyObject* self, PyObject* args, PyObject* kwargs)
 {
 	int physicsClientId = 0;
@@ -7961,119 +8124,6 @@ static PyObject* pybullet_enableJointForceTorqueSensor(PyObject* self, PyObject*
 
 	PyErr_SetString(BulletError, "Error creating sensor.");
 	return NULL;
-}
-
-static int extractVertices(PyObject* verticesObj, double* vertices, int maxNumVertices)
-{
-	int numVerticesOut = 0;
-
-	if (verticesObj)
-	{
-		PyObject* seqVerticesObj = PySequence_Fast(verticesObj, "expected a sequence of vertex positions");
-		if (seqVerticesObj)
-		{
-			int numVerticesSrc = PySequence_Size(seqVerticesObj);
-			{
-				int i;
-
-				if (numVerticesSrc > B3_MAX_NUM_VERTICES)
-				{
-					PyErr_SetString(BulletError, "Number of vertices exceeds the maximum.");
-					Py_DECREF(seqVerticesObj);
-					return 0;
-				}
-				for (i = 0; i < numVerticesSrc; i++)
-				{
-					PyObject* vertexObj = PySequence_GetItem(seqVerticesObj, i);
-					double vertex[3];
-					if (setVector3d(vertexObj, vertex))
-					{
-						if (vertices)
-						{
-							vertices[numVerticesOut * 3 + 0] = vertex[0];
-							vertices[numVerticesOut * 3 + 1] = vertex[1];
-							vertices[numVerticesOut * 3 + 2] = vertex[2];
-						}
-						numVerticesOut++;
-					}
-				}
-			}
-		}
-	}
-	return numVerticesOut;
-}
-
-static int extractUVs(PyObject* uvsObj, double* uvs, int maxNumVertices)
-{
-	int numUVOut = 0;
-
-	if (uvsObj)
-	{
-		PyObject* seqVerticesObj = PySequence_Fast(uvsObj, "expected a sequence of uvs");
-		if (seqVerticesObj)
-		{
-			int numVerticesSrc = PySequence_Size(seqVerticesObj);
-			{
-				int i;
-
-				if (numVerticesSrc > B3_MAX_NUM_VERTICES)
-				{
-					PyErr_SetString(BulletError, "Number of uvs exceeds the maximum.");
-					Py_DECREF(seqVerticesObj);
-					return 0;
-				}
-				for (i = 0; i < numVerticesSrc; i++)
-				{
-					PyObject* vertexObj = PySequence_GetItem(seqVerticesObj, i);
-					double uv[2];
-					if (setVector2d(vertexObj, uv))
-					{
-						if (uvs)
-						{
-							uvs[numUVOut * 2 + 0] = uv[0];
-							uvs[numUVOut * 2 + 1] = uv[1];
-						}
-						numUVOut++;
-					}
-				}
-			}
-		}
-	}
-	return numUVOut;
-}
-
-static int extractIndices(PyObject* indicesObj, int* indices, int maxNumIndices)
-{
-	int numIndicesOut = 0;
-
-	if (indicesObj)
-	{
-		PyObject* seqIndicesObj = PySequence_Fast(indicesObj, "expected a sequence of indices");
-		if (seqIndicesObj)
-		{
-			int numIndicesSrc = PySequence_Size(seqIndicesObj);
-			{
-				int i;
-
-				if (numIndicesSrc > B3_MAX_NUM_INDICES)
-				{
-					PyErr_SetString(BulletError, "Number of indices exceeds the maximum.");
-					Py_DECREF(seqIndicesObj);
-					return 0;
-				}
-				for (i = 0; i < numIndicesSrc; i++)
-				{
-					int index = getIntFromSequence(seqIndicesObj, i);
-					if (indices)
-					{
-						indices[numIndicesOut] = index;
-					}
-					numIndicesOut++;
-				}
-			}
-		}
-	}
-	return numIndicesOut;
 }
 
 static PyObject* pybullet_createCollisionShape(PyObject* self, PyObject* args, PyObject* kwargs)
@@ -11954,6 +12004,12 @@ static PyMethodDef MethodDefs[] = {
 	 METH_VARARGS | METH_KEYWORDS,
 	 "loadSoftBody(fileName, basePosition=None, baseOrientation=None, scale=-1, mass=-1, collisionMargin=-1, physicsClientId=0)\n"
 	 "Load a soft body from an obj file."},
+
+	{"createSoftBody",
+	 (PyCFunction)pybullet_createSoftBody,
+	 METH_VARARGS | METH_KEYWORDS,
+	 "createSoftBody(bodyConfig, basePosition=[0.,0.,0.], baseOrientation=[0.,0.,0.,1.], physicsClientId=0)\n"
+	 "Create a soft body from scratch using a body configuration object."},
 #endif
 
 	{"loadBullet",
@@ -11995,25 +12051,28 @@ static PyMethodDef MethodDefs[] = {
 	{"createCollisionShape",
 	 (PyCFunction)pybullet_createCollisionShape,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "createCollisionShape(**kwargs, physicsClientId=0)\n"
+	 "createCollisionShape(shapeType, radius=-1, halfExtents=None, height=-1, fileName=None, meshScale=None, planeNormal=None, flags=-1, collisionFramePosition=None, collisionFrameOrientation=None, vertices=None, indices=None, heightfieldTextureScaling=-1, heightfieldData=None, numHeightfieldRows=-1, numHeightfieldColumns=-1, replaceHeightfieldIndex=-1, physicsClientId=0)\n"
 	 "Create a collision shape. Returns a non-negative (int) unique id, if "
-	 "successful, negative otherwise."},
+	 "successful, negative otherwise. Only the shapeType argument is required."},
 
 	{"createCollisionShapeArray",
 	 (PyCFunction)pybullet_createCollisionShapeArray,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "createCollisionShapeArray(shapeTypes, radii=None, halfExtents=None, lengths=None, fileNames=None, meshScales=None, planeNormals=None, flags=None, collisionFramePositions=None, collisionFrameOrientations=None, physicsClientId=0)\n"
 	 "Create collision shapes. Returns a non-negative (int) unique id, if "
 	 "successful, negative otherwise."},
 
 	{"removeCollisionShape",
 	 (PyCFunction)pybullet_removeCollisionShape,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "removeCollisionShape(collisionShapeId, physicsClientId=0)\n"
 	 "Remove a collision shape. Only useful when the collision shape is not "
 	 "used in a body (to perform a getClosestPoint query)."},
 
 	{"getMeshData",
 	 (PyCFunction)pybullet_getMeshData,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getMeshData(collisionShapeId, physicsClientId=0)\n"
 	 "Get mesh data. Returns vertices etc from the mesh."},
 
 	{"createVisualShape",
