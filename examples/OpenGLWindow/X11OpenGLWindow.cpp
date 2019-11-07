@@ -940,17 +940,15 @@ void X11OpenGLWindow::pumpMessage()
 				};
 				if (m_data->m_keyboardCallback)
 				{
-					int state = 1;
+					/* Kaedenn 2019/10/27: state now contains modifier flags */
+					int state = 1 + (m_data->m_modifierFlags << 1);
 					(*m_data->m_keyboardCallback)(keycode, state);
-					//    printf("keycode %d",keycode);
-					//  fflush(stdout);
 				}
 				break;
 			}
 
 			case KeyRelease:
 			{
-				//           fflush(stdout);
 				int keycode = getAsciiCodeFromVirtualKeycode(m_data->m_xev.xkey.keycode);
 				switch (keycode)
 				{
@@ -979,8 +977,7 @@ void X11OpenGLWindow::pumpMessage()
 						XEvent nev;
 						MyXPeekEvent(m_data->m_dpy, &nev);
 
-						if (nev.type == KeyPress && nev.xkey.time == m_data->m_xev.xkey.time &&
-							nev.xkey.keycode == m_data->m_xev.xkey.keycode)
+						if (nev.type == KeyPress && nev.xkey.time == m_data->m_xev.xkey.time && nev.xkey.keycode == m_data->m_xev.xkey.keycode)
 						{
 							//fprintf (stdout, "key #%ld was retriggered.\n",
 							// (long) MyXLookupKeysym(&nev.xkey, 0));
