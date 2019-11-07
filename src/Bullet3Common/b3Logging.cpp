@@ -28,7 +28,6 @@ void b3PrintfFuncDefault(const char* msg)
 	OutputDebugStringA(msg);
 #endif
 	printf("%s", msg);
-	//is this portable?
 	fflush(stdout);
 }
 
@@ -38,7 +37,6 @@ void b3WarningMessageFuncDefault(const char* msg)
 	OutputDebugStringA(msg);
 #endif
 	printf("%s", msg);
-	//is this portable?
 	fflush(stdout);
 }
 
@@ -48,8 +46,6 @@ void b3ErrorMessageFuncDefault(const char* msg)
 	OutputDebugStringA(msg);
 #endif
 	printf("%s", msg);
-
-	//is this portable?
 	fflush(stdout);
 }
 
