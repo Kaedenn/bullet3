@@ -74,7 +74,7 @@ struct PhysicsClientSharedMemoryInternalData
 	SharedMemoryStatus m_lastServerStatus;
 
 	SendActualStateSharedMemoryStorage m_cachedState;
-	
+
 	int m_counter;
 
 	bool m_isConnected;
@@ -84,7 +84,7 @@ struct PhysicsClientSharedMemoryInternalData
 	bool m_verboseOutput;
 	double m_timeOutInSeconds;
 
-	
+
 
 	PhysicsClientSharedMemoryInternalData()
 		: m_sharedMemory(0),
@@ -365,13 +365,13 @@ bool PhysicsClientSharedMemory::connect()
 		}
 		else
 		{
-			b3Printf("Connected to existing shared memory %d (magic %d), status OK.", m_data->m_sharedMemoryKey, m_data->m_testBlock1->m_magicId);
+			b3Printf("Connected to existing shared memory %d (magic %d), status OK.\n", m_data->m_sharedMemoryKey, m_data->m_testBlock1->m_magicId);
 			m_data->m_isConnected = true;
 		}
 	}
 	else
 	{
-		b3Warning("Cannot connect to shared memory");
+		b3Warning("Cannot connect to shared memory\n");
 		return false;
 	}
 #if 0
@@ -393,15 +393,19 @@ bool PhysicsClientSharedMemory::connect()
 		while ((status == 0) && (clock.getTimeInSeconds()-startTime < timeOutInSeconds))
 		{
 			status = processServerStatus();
-		
 		}
-
-
 		//submitClientCommand(command);
-
-
 	}
 #endif
+
+	/* Kaedenn 2019/10/27 */
+	const char* verboseEnv = getenv("B3_CLIENT_VERBOSE");
+	if (verboseEnv != NULL && strlen(verboseEnv) > 0)
+	{
+		m_data->m_verboseOutput = true;
+		b3Printf("Enabled verbose mode for PhysicsClientSharedMemory");
+	}
+
 	return true;
 }
 
@@ -545,7 +549,7 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 
 		const SharedMemoryStatus& serverCmd = m_data->m_testBlock1->m_serverCommands[0];
 
-		if (serverCmd.m_type==CMD_ACTUAL_STATE_UPDATE_COMPLETED)
+		if (serverCmd.m_type == CMD_ACTUAL_STATE_UPDATE_COMPLETED)
 		{
 			SendActualStateSharedMemoryStorage* serverState = (SendActualStateSharedMemoryStorage*)m_data->m_testBlock1->m_bulletStreamDataServerToClientRefactor;
 			m_data->m_cachedState = *serverState;
@@ -851,7 +855,7 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 			case CMD_ACTUAL_STATE_UPDATE_COMPLETED:
 			{
 				B3_PROFILE("CMD_ACTUAL_STATE_UPDATE_COMPLETED");
-				
+
 				if (m_data->m_verboseOutput)
 				{
 					b3Printf("Received actual state\n");
@@ -1261,11 +1265,11 @@ const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 			case CMD_STATE_LOGGING_START_COMPLETED:
 			{
 				break;
-			};
+			}
 			case CMD_STATE_LOGGING_COMPLETED:
 			{
 				break;
-			};
+			}
 			case CMD_STATE_LOGGING_FAILED:
 			{
 				b3Warning("State Logging failed");
@@ -1966,9 +1970,9 @@ void PhysicsClientSharedMemory::getCachedCollisionShapeInformation(struct b3Coll
 void PhysicsClientSharedMemory::getCachedMeshData(struct b3MeshData* meshData)
 {
 	m_data->m_cachedMeshData.m_numVertices = m_data->m_cachedVertexPositions.size();
-	
+
 	m_data->m_cachedMeshData.m_vertices = m_data->m_cachedMeshData.m_numVertices ? &m_data->m_cachedVertexPositions[0] : 0;
-	
+
 	*meshData = m_data->m_cachedMeshData;
 }
 

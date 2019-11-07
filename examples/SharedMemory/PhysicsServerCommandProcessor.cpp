@@ -1794,7 +1794,7 @@ struct PhysicsServerCommandProcessorInternalData
 	{
 		int baseDofQ = multiBody->hasFixedBase() ? 0 : 7;
 		int baseDofQdot = multiBody->hasFixedBase() ? 0 : 6;
-		
+
 		pose.resize(7 + multiBody->getNumPosVars());
 		vel.resize(7 + multiBody->getNumPosVars());  //??
 
@@ -2224,7 +2224,7 @@ struct ProgrammaticUrdfInterface : public URDFImporterInterface
 			if (matColPtr)
 			{
 				matCol = *matColPtr;
-				if ((m_flags&CUF_USE_MATERIAL_TRANSPARANCY_FROM_MTL)==0)
+				if ((m_flags&CUF_USE_MATERIAL_TRANSPARANCY_FROM_MTL) == 0)
 				{
 					matCol.m_rgbaColor[3] = 1;
 				}
@@ -4229,7 +4229,7 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 	btScalar& minHeight,
 	btScalar& maxHeight)
 {
-	
+
 	std::string ext;
 	std::string fn(fileName);
 	std::string ext_ = fn.substr(fn.size() - 4);
@@ -4238,13 +4238,13 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 		ext += char(tolower(*i));
 	}
 
-	
+
 	if (ext != ".txt")
 	{
-		
+
 		char relativeFileName[1024];
 		int found = fileIO.findResourcePath(fileName, relativeFileName, 1024);
-		
+
 		b3AlignedObjectArray<char> buffer;
 		buffer.reserve(1024);
 		int fileId = fileIO.fileOpen(relativeFileName, "rb");
@@ -4273,7 +4273,7 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 			{
 				fileIO.fileClose(fileId);
 				int nElements = width * height;
-				int bytesPerElement = sizeof(btScalar); 
+				int bytesPerElement = sizeof(btScalar);
 				btAssert(bytesPerElement > 0 && "bad bytes per element");
 
 				int nBytes = nElements * bytesPerElement;
@@ -4282,29 +4282,29 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 
 				unsigned char * p = raw;
 				for (int j = 0; j < height; ++j)
-				
+
 				{
-					
+
 					for (int i = 0; i < width; ++i)
 					{
-						
+
 						float z = double(image[(width-1-i) * 3+ width*j * 3])*(1. / 255.);
 						btScalar * pf = (btScalar *)p;
 						*pf = z;
 						p += bytesPerElement;
 						// update min/max
-						if (!i && !j) 
+						if (!i && !j)
 						{
 							minHeight = z;
 							maxHeight = z;
 						}
-						else 
+						else
 						{
-							if (z < minHeight) 
+							if (z < minHeight)
 							{
 								minHeight = z;
 							}
-							if (z > maxHeight) 
+							if (z > maxHeight)
 							{
 								maxHeight = z;
 							}
@@ -4365,7 +4365,7 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 				}
 				width = rows;
 				height = cols;
-				
+
 				fileIO.fileClose(slot);
 				int nElements = width * height;
 				//  std::cerr << "  nElements = " << nElements << "\n";
@@ -4382,10 +4382,10 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 				unsigned char* p = raw;
 				for (int i = 0; i < width; ++i)
 				{
-					
+
 					for (int j = 0; j < height; ++j)
 					{
-						
+
 						double z = allValues[i + width*j];
 						//convertFromFloat(p, z, type);
 						btScalar * pf = (btScalar *)p;
@@ -4408,7 +4408,7 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 								maxHeight = z;
 							}
 						}
-						
+
 					}
 				}
 				return raw;
@@ -4416,7 +4416,7 @@ static unsigned char* MyGetRawHeightfieldData(CommonFileIOInterface& fileIO, PHY
 		}
 	}
 
-	
+
 	return 0;
 }
 
@@ -4572,7 +4572,7 @@ bool PhysicsServerCommandProcessor::processCreateCollisionShapeCommand(const str
 				if (clientCmd.m_createUserShapeArgs.m_shapes[i].m_numHeightfieldColumns > 0 &&
 					clientCmd.m_createUserShapeArgs.m_shapes[i].m_numHeightfieldRows > 0)
 				{
-					
+
 					width = clientCmd.m_createUserShapeArgs.m_shapes[i].m_numHeightfieldRows;
 					height = clientCmd.m_createUserShapeArgs.m_shapes[i].m_numHeightfieldColumns;
 					float* heightfieldDataSrc = (float*)bufferServerToClient;
@@ -4593,7 +4593,7 @@ bool PhysicsServerCommandProcessor::processCreateCollisionShapeCommand(const str
 				}
 				if (heightfieldData)
 				{
-					
+
 					//replace heightfield data or create new heightfield
 					if (clientCmd.m_createUserShapeArgs.m_shapes[i].m_replaceHeightfieldIndex >=0)
 					{
@@ -4651,7 +4651,7 @@ bool PhysicsServerCommandProcessor::processCreateCollisionShapeCommand(const str
 							delete worldImporter;
 							serverStatusOut.m_type = CMD_CREATE_COLLISION_SHAPE_COMPLETED;
 						}
-						
+
 						delete heightfieldData;
 						return hasStatus;
 					}
@@ -4680,7 +4680,7 @@ bool PhysicsServerCommandProcessor::processCreateCollisionShapeCommand(const str
 						shape = heightfieldShape;
 						if (upAxis == 2)
 							heightfieldShape->setFlipTriangleWinding(true);
-						
+
 						// scale the shape
 						btVector3 localScaling(clientCmd.m_createUserShapeArgs.m_shapes[i].m_meshScale[0],
 							clientCmd.m_createUserShapeArgs.m_shapes[i].m_meshScale[1],
@@ -4720,7 +4720,7 @@ bool PhysicsServerCommandProcessor::processCreateCollisionShapeCommand(const str
 
 				break;
 			}
-			
+
 			case GEOM_MESH:
 			{
 				btVector3 meshScale(clientCmd.m_createUserShapeArgs.m_shapes[i].m_meshScale[0],
@@ -5066,7 +5066,7 @@ bool PhysicsServerCommandProcessor::processRequestMeshDataCommand(const struct S
 			serverStatusOut.m_sendMeshDataArgs.m_numVerticesRemaining = numVerticesRemaining - verticesCopied;
 	  }
 #endif //SKIP_SOFT_BODY_MULTI_BODY_DYNAMICS_WORLD
-			
+
 	}
 
 	serverStatusOut.m_numDataStreamBytes = 0;
@@ -6196,7 +6196,7 @@ bool PhysicsServerCommandProcessor::processCollisionFilterCommand(const struct S
 			btCollisionObject* colObj = 0;
 			if (body->m_multiBody)
 			{
-				if (clientCmd.m_collisionFilterArgs.m_linkIndexA==-1)
+				if (clientCmd.m_collisionFilterArgs.m_linkIndexA == -1)
 				{
 					colObj = body->m_multiBody->getBaseCollider();
 				}
@@ -6676,7 +6676,7 @@ bool PhysicsServerCommandProcessor::processSendDesiredStateCommand(const struct 
 
 
 				cRBDModel* rbdModel = 0;
-				
+
 				{
 					BT_PROFILE("findOrCreateRBDModel");
 					rbdModel = m_data->findOrCreateRBDModel(body->m_multiBody, &jointPositionsQ[0], &jointVelocitiesQdot[0]);
@@ -6701,7 +6701,7 @@ bool PhysicsServerCommandProcessor::processSendDesiredStateCommand(const struct 
 					M.diagonal() += m_data->m_physicsDeltaTime * mKd;
 
 					Eigen::VectorXd pose_inc;
-					
+
 					const Eigen::MatrixXd& joint_mat = rbdModel->GetJointMat();
 					{
 						BT_PROFILE("cKinTree::VelToPoseDiff");
@@ -6720,7 +6720,7 @@ bool PhysicsServerCommandProcessor::processSendDesiredStateCommand(const struct 
 					}
 
 					pose_inc = pose+m_data->m_physicsDeltaTime * pose_inc;
-					
+
 					{
 						BT_PROFILE("cKinTree::PostProcessPose");
 						cKinTree::PostProcessPose(joint_mat, pose_inc);
@@ -6735,10 +6735,10 @@ bool PhysicsServerCommandProcessor::processSendDesiredStateCommand(const struct 
 					{
 						pose_err[i] = 0;
 					}
-					
+
 					Eigen::VectorXd vel_err = tar_vel - vel;
 					Eigen::VectorXd acc;
-					
+
 					{
 						BT_PROFILE("acc");
 						acc = Kp_mat * pose_err + Kd_mat * vel_err - C;
@@ -6775,10 +6775,10 @@ bool PhysicsServerCommandProcessor::processSendDesiredStateCommand(const struct 
 							torqueIndex++;
 						}
 					}
-					
-					
+
+
 				}
-			
+
 				break;
 			}
 #endif
@@ -7888,7 +7888,7 @@ bool PhysicsServerCommandProcessor::processCreateMultiBodyCommandSingle(const st
 			{
 
 				serverStatusOut.m_type = CMD_CREATE_MULTI_BODY_COMPLETED;
-				if (bufferSizeInBytes>0 && serverStatusOut.m_numDataStreamBytes==0)
+				if (bufferSizeInBytes>0 && serverStatusOut.m_numDataStreamBytes == 0)
 				{
 					{
 						BT_PROFILE("autogenerateGraphicsObjects");
@@ -8217,21 +8217,21 @@ bool PhysicsServerCommandProcessor::processProfileTimingCommand(const struct Sha
 {
 	bool hasStatus = true;
 
-	
+
 	{
 		if (clientCmd.m_profile.m_type == 0)
 		{
-			
+
 			char** eventNamePtr = m_data->m_profileEvents[clientCmd.m_profile.m_name];
 			char* eventName = 0;
 			if (eventNamePtr)
 			{
-				
+
 				eventName = *eventNamePtr;
 			}
 			else
 			{
-				
+
 				int len = strlen(clientCmd.m_profile.m_name);
 				eventName = new char[len + 1];
 				strcpy(eventName, clientCmd.m_profile.m_name);
@@ -8245,7 +8245,7 @@ bool PhysicsServerCommandProcessor::processProfileTimingCommand(const struct Sha
 		{
 			b3LeaveProfileZone();
 		}
-		
+
 	}
 
 	serverStatusOut.m_type = CMD_CLIENT_COMMAND_COMPLETED;
@@ -9996,7 +9996,7 @@ bool PhysicsServerCommandProcessor::processCalculateMassMatrixCommand(const stru
 {
 	bool hasStatus = true;
 	BT_PROFILE("CMD_CALCULATE_MASS_MATRIX");
-	
+
 	SharedMemoryStatus& serverCmd = serverStatusOut;
 	serverCmd.m_type = CMD_CALCULATED_MASS_MATRIX_FAILED;
 	InternalBodyHandle* bodyHandle = m_data->m_bodyHandles.getHandle(clientCmd.m_calculateMassMatrixArguments.m_bodyUniqueId);
@@ -11329,13 +11329,13 @@ bool PhysicsServerCommandProcessor::processCalculateInverseKinematicsCommand2(co
 							btInverseDynamics::mat3x jac_t(3, numDofs + baseDofs);
 							btInverseDynamics::mat3x jac_r(3, numDofs + baseDofs);
 							currentDiff = 0;
-							
+
 							endEffectorCurrentWorldPositions.resize(0);
 							endEffectorCurrentWorldPositions.reserve(clientCmd.m_calculateInverseKinematicsArguments.m_numEndEffectorLinkIndices * 3);
-							
+
 							for (int ne = 0; ne < clientCmd.m_calculateInverseKinematicsArguments.m_numEndEffectorLinkIndices; ne++)
 							{
-								
+
 								int endEffectorLinkIndex2 = clientCmd.m_calculateInverseKinematicsArguments.m_endEffectorLinkIndices[ne];
 
 								// Note that inverse dynamics uses zero-based indexing of bodies, not starting from -1 for the base link.
@@ -11343,7 +11343,7 @@ bool PhysicsServerCommandProcessor::processCalculateInverseKinematicsCommand2(co
 								tree->getBodyJacobianRot(endEffectorLinkIndex2 + 1, &jac_r);
 
 								//calculatePositionKinematics is already done inside calculateInverseDynamics
-								
+
 								tree->getBodyOrigin(endEffectorLinkIndex2 + 1, &world_origin);
 								tree->getBodyTransform(endEffectorLinkIndex2 + 1, &world_rot);
 
@@ -11355,11 +11355,11 @@ bool PhysicsServerCommandProcessor::processCalculateInverseKinematicsCommand2(co
 										jacobian_angular[(ne * 3 + i) * numDofs + j] = jac_r(i, (baseDofs + j));
 									}
 								}
-								
+
 								endEffectorCurrentWorldPositions.push_back(world_origin[0]);
 								endEffectorCurrentWorldPositions.push_back(world_origin[1]);
 								endEffectorCurrentWorldPositions.push_back(world_origin[2]);
-								
+
 								btInverseDynamics::vec3 targetPos(btVector3(endEffectorTargetWorldPositions[ne*3+0],
 									endEffectorTargetWorldPositions[ne * 3 + 1],
 									endEffectorTargetWorldPositions[ne * 3 + 2]));
@@ -11455,7 +11455,7 @@ bool PhysicsServerCommandProcessor::processCalculateInverseKinematicsCommand2(co
 					endEffectorBaseCoord.getRotation().serializeDouble(endEffectorWorldOrientation);
 
 
-			
+
 
 					// Set joint damping coefficents. A small default
 					// damping constant is added to prevent singularity
@@ -11477,7 +11477,7 @@ bool PhysicsServerCommandProcessor::processCalculateInverseKinematicsCommand2(co
 					double targetDampCoeff[6] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
 					bool performedIK = false;
 
-					if (clientCmd.m_calculateInverseKinematicsArguments.m_numEndEffectorLinkIndices==1)
+					if (clientCmd.m_calculateInverseKinematicsArguments.m_numEndEffectorLinkIndices == 1)
 					{
 
 						BT_PROFILE("computeIK");
@@ -11729,7 +11729,7 @@ bool PhysicsServerCommandProcessor::processRequestVisualShapeInfoCommand(const s
 		//int visualShapeStorage = bufferSizeInBytes / totalBytesPerVisualShape - 1;
 
 				//set serverCmd.m_sendVisualShapeArgs when totalNumVisualShapes is zero
-				if (totalNumVisualShapes==0) {
+				if (totalNumVisualShapes == 0) {
 				  serverCmd.m_sendVisualShapeArgs.m_numRemainingVisualShapes = 0;
 				  serverCmd.m_sendVisualShapeArgs.m_numVisualShapesCopied = 0;
 				  serverCmd.m_sendVisualShapeArgs.m_startingVisualShapeIndex = clientCmd.m_requestVisualShapeDataArguments.m_startingVisualShapeIndex;
@@ -12606,7 +12606,7 @@ bool PhysicsServerCommandProcessor::processCommand(const struct SharedMemoryComm
 		}
 		case CMD_CALCULATE_INVERSE_KINEMATICS:
 		{
-			if (clientCmd.m_calculateInverseKinematicsArguments.m_numEndEffectorLinkIndices==1)
+			if (clientCmd.m_calculateInverseKinematicsArguments.m_numEndEffectorLinkIndices == 1)
 			{
 				hasStatus = processCalculateInverseKinematicsCommand(clientCmd, serverStatusOut, bufferServerToClient, bufferSizeInBytes);
 			} else
@@ -13209,7 +13209,7 @@ void PhysicsServerCommandProcessor::resetSimulation()
 	m_data->m_pluginManager.addNotification(notification);
 
 	syncPhysicsToGraphics2();
-	
+
 }
 
 void PhysicsServerCommandProcessor::setTimeOut(double /*timeOutInSeconds*/)

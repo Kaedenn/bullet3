@@ -521,6 +521,17 @@ struct b3LoadSoftBodyResultArgs
 	int m_objectUniqueId;
 };
 
+/* Kaedenn 2019/10/31 */
+struct CreateSoftBodyArgs
+{
+	/* TODO: bodyConfig object */
+	double m_scale;
+	double m_mass;
+	double m_collisionMargin;
+	double m_initialPosition[3];
+	double m_initialOrientation[4];
+};
+
 struct RequestActualStateArgs
 {
 	int m_bodyUniqueId;
