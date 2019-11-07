@@ -228,7 +228,10 @@ void renderSquareA(float x, float y, float z)
 	glEnd();
 }
 
-inline void glDrawVector(const btVector3& v) { glVertex3d(v[0], v[1], v[2]); }
+inline void glDrawVector(const btVector3& v)
+{
+	glVertex3d(v[0], v[1], v[2]);
+}
 
 void GL_ShapeDrawer::drawOpenGL(btScalar* m, const btCollisionShape* shape, const btVector3& color, int debugMode, const btVector3& worldBoundsMin, const btVector3& worldBoundsMax)
 {

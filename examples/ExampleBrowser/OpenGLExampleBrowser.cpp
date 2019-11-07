@@ -174,6 +174,24 @@ static int gGpuArraySizeX = 45;
 static int gGpuArraySizeY = 55;
 static int gGpuArraySizeZ = 45;
 
+/* Kaedenn 2019/10/27: backtrace support */
+#include <string>
+#include <vector>
+#include <unistd.h>
+#include <execinfo.h>
+static int gStackTrimStart = 0;
+static int gStackTrimEnd = 0;
+static std::vector<std::string> gStackTrimFilters;
+static void PrintStackTrace();
+
+/* Kaedenn 2019/10/27: modifier keys */
+enum
+{
+	MOD_ALT = 1,
+	MOD_SHIFT = 2,
+	MOD_CONTROL = 4
+};
+
 //#include <float.h>
 //unsigned int fp_control_state = _controlfp(_EM_INEXACT, _MCW_EM);
 
@@ -197,7 +215,6 @@ const char* gPngFileName = NULL;
 int gPngSkipFrames = 0;
 
 b3KeyboardCallback prevKeyboardCallback = 0;
-
 void MyKeyboardCallback(int key, int state)
 {
 	//b3Printf("key=%d, state=%d", key, state);
@@ -215,70 +232,77 @@ void MyKeyboardCallback(int key, int state)
 		handled = sCurrentDemo->keyboardCallback(key, state);
 	}
 
+	/* Kaedenn 2019/10/27: extract modifier information from state */
+	bool isPressed = ((state & 1) != 0);
+	bool hasAlt = (((state >> 1) & MOD_ALT) != 0);
+	bool hasShift = (((state >> 1) & MOD_SHIFT) != 0);
+	bool hasCtrl = (((state >> 1) & MOD_CONTROL) != 0);
+	bool hasAnyMod = (hasAlt || hasShift || hasCtrl);
+
 	//checkout: is it desired to ignore keys, if the demo already handles them?
 	//if (handled)
 	//  return;
 
 	if (gEnableDefaultKeyboardShortcuts)
 	{
-		if (key == 'a' && state)
+		if (key == 'a' && isPressed)
 		{
 			gDebugDrawFlags ^= btIDebugDraw::DBG_DrawAabb;
 			b3Printf("Toggling %s", "DBG_DrawAabb");
 		}
-		if (key == 'c' && state)
+		if (key == 'c' && isPressed)
 		{
 			gDebugDrawFlags ^= btIDebugDraw::DBG_DrawContactPoints;
 			b3Printf("Toggling %s", "DBG_DrawContactPoints");
 		}
-		if (key == 'd' && state)
+		if (key == 'd' && isPressed)
 		{
 			gDebugDrawFlags ^= btIDebugDraw::DBG_NoDeactivation;
 			gDisableDeactivation = ((gDebugDrawFlags & btIDebugDraw::DBG_NoDeactivation) != 0);
 			b3Printf("Toggling %s", "DBG_NoDeactivation");
 		}
-		if (key == 'j' && state)
+		if (key == 'j' && isPressed)
 		{
 			gDebugDrawFlags ^= btIDebugDraw::DBG_DrawFrames;
 			b3Printf("Toggling %s", "DBG_DrawFrames");
 		}
 
-		if (key == 'k' && state)
+		if (key == 'k' && isPressed)
 		{
 			gDebugDrawFlags ^= btIDebugDraw::DBG_DrawConstraints;
 			b3Printf("Toggling %s", "DBG_DrawConstraints");
 		}
 
-		if (key == 'l' && state)
+		if (key == 'l' && isPressed)
 		{
 			gDebugDrawFlags ^= btIDebugDraw::DBG_DrawConstraintLimits;
 			b3Printf("Toggling %s", "DBG_DrawConstraintLimits");
 		}
-		if (key == 'w' && state)
+		if (key == 'w' && isPressed)
 		{
 			visualWireframe = !visualWireframe;
 			gDebugDrawFlags ^= btIDebugDraw::DBG_DrawWireframe;
 			b3Printf("Toggling %s", "DBG_DrawWireframe");
 		}
 
-		if (key == 'v' && state)
+		if (key == 'v' && isPressed)
 		{
 			renderVisualGeometry = !renderVisualGeometry;
 			b3Printf("Toggling %s", "renderVisualGeometry");
 		}
-		if (key == 'g' && state)
+		if (key == 'g' && isPressed)
 		{
 			renderGrid = !renderGrid;
 			renderGui = !renderGui;
 			b3Printf("Toggling %s", "renderGrid and renderGui");
 		}
 
-		if (key == 'i' && state)
+		if (key == 'i' && isPressed)
 		{
 			pauseSimulation = !pauseSimulation;
 			b3Printf("Toggling %s", "pauseSimulation");
 		}
-		if (key == 'o' && state)
+		if (key == 'o' && isPressed)
 		{
 			singleStepSimulation = true;
 			b3Printf("Setting %s", "singleStepSimulation");
@@ -286,7 +310,7 @@ void MyKeyboardCallback(int key, int state)
 
 		if (key == 'p')
 		{
-			if (state)
+			if (isPressed)
 			{
 				b3ChromeUtilsStartTimings();
 			}
@@ -303,7 +327,7 @@ void MyKeyboardCallback(int key, int state)
 		}
 
 #ifndef NO_OPENGL3
-		if (key == 's' && state)
+		if (key == 's' && isPressed)
 		{
 			useShadowMap = !useShadowMap;
 			b3Printf("Toggling %s", "useShadowMap");
@@ -312,7 +336,7 @@ void MyKeyboardCallback(int key, int state)
 		if (key == B3G_F1)
 		{
 			static int count = 0;
-			if (state)
+			if (isPressed)
 			{
 				b3Printf("F1 pressed %d", count++);
 
@@ -362,7 +386,6 @@ static void MyMouseMoveCallback(float x, float y)
 }
 
 b3MouseButtonCallback prevMouseButtonCallback = 0;
-
 static void MyMouseButtonCallback(int button, int state, float x, float y)
 {
 	bool handled = false;
@@ -576,7 +599,7 @@ static void loadCurrentSettings(const char* startFileName, b3CommandLineArgs& ar
 	FILE* f = fopen(startFileName, "r");
 	if (f)
 	{
-		char oneline[1024];
+		char oneline[1024] = {0};
 		char* argv[] = {0, &oneline[0]};
 
 		while (fgets(oneline, 1024, f) != NULL)
@@ -611,11 +634,55 @@ void MyComboBoxCallback(int comboId, const char* item)
 //in case of multi-threading, don't submit messages while the GUI is rendering (causing crashes)
 static bool gBlockGuiMessages = false;
 
+/* Kaedenn: 2019/10/27 */
+static void PrintStackTrace()
+{
+	/* Requires glibc >= 2.1 */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#if (__GNUC__ << 16) + __GNUC_MINOR__ >= (2 << 16) + 1
+	void* buffer[512] = {0};
+	char** strings = NULL;
+	int nptrs = backtrace(buffer, sizeof(buffer)/sizeof(void*));
+	if ((strings = backtrace_symbols(buffer, nptrs)) != NULL)
+	{
+		fprintf(stderr, "Backtrace:\n");
+		for (int i = gStackTrimStart; i < nptrs - gStackTrimStart - gStackTrimEnd; ++i)
+		{
+			/* Check for filtering against gStackTrimFilters */
+			bool filter = false;
+			for (int j = 0; j < gStackTrimFilters.size(); ++j)
+			{
+				if (strstr(strings[i], gStackTrimFilters[j].c_str()) != NULL)
+				{
+					/* Filter is present; line is filtered out */
+					filter = true;
+					break;
+				}
+			}
+			if (!filter)
+			{
+				fprintf(stderr, "\tat %d %s\n", i, strings[i]);
+			}
+		}
+		fflush(stderr);
+		free(strings);
+	}
+	else
+	{
+		fprintf(stderr, "Calling backtrace_symbols(%p, %lu): error %d: %s\n",
+				buffer, sizeof(buffer)/sizeof(void*),
+				errno, strerror(errno));
+	}
+#endif
+#endif
+}
+
 void MyGuiPrintf(const char* msg)
 {
 	/* Kaedenn 2019/10/27: Print "\n" only if msg doeesn't contain one */
 	printf("b3Printf: %s", msg);
-	if (strchr(msg, '\n') == NULL) {
+	if (strchr(msg, '\n') == NULL)
+	{
 		printf("\n");
 	}
 	if (!gDisableDemoSelection && !gBlockGuiMessages)
@@ -629,7 +696,8 @@ void MyStatusBarPrintf(const char* msg)
 {
 	/* Kaedenn 2019/10/27: Print "\n" only if msg doeesn't contain one */
 	printf("b3Printf: %s", msg);
-	if (strchr(msg, '\n') == NULL) {
+	if (strchr(msg, '\n') == NULL)
+	{
 		printf("\n");
 	}
 	if (!gDisableDemoSelection && !gBlockGuiMessages)
@@ -641,7 +709,13 @@ void MyStatusBarPrintf(const char* msg)
 
 void MyStatusBarError(const char* msg)
 {
-	printf("Warning: %s\n", msg);
+	/* Kaedenn 2019/11/02: Print "\n" only if msg doesn't contain one */
+	printf("b3Warning: %s", msg);
+	if (strchr(msg, '\n') == NULL)
+	{
+		printf("\n");
+	}
+	PrintStackTrace();
 	if (!gDisableDemoSelection && !gBlockGuiMessages)
 	{
 		bool isLeft = false;
@@ -913,7 +987,50 @@ bool OpenGLExampleBrowser::init(int argc, char* argv[])
 	b3SetCustomErrorMessageFunc(MyStatusBarError);
 
 	/* Kaedenn 2019/10/27 */
+	if (args.CheckCmdLineFlag("help"))
+	{
+		fprintf(stderr, "OpenGLExampleBrowser usage:\n"
+"  --background_color_blue=VAL  background color blue component (0..1)\n"
+"  --background_color_green=VAL background color green component (0..1)\n"
+"  --background_color_red=VAL   background color red component (0..1)\n"
+"  --disable_retina             disallow retina display\n"
+"  --enable_experimental_opencl enable experimental OpenCL examples\n"
+"  --hide_explorer              hide the left Explorer window in the GUI\n"
+"  --nogui                      start with the GUI hidden\n"
+"  --opengl2                    use OpenGL2 fallback over OpenGL3\n"
+"  --paused                     start with the simulation paused\n"
+"  --tracing                    enable tracing\n"
+"  --verbose                    enable verbose output\n"
+"  --width=PIXELS               width of the example browser window\n"
+"  --height=PIXELS              height of the example browser window\n"
+"  --fixed_timestep=SEC         set a custom fixed timestep\n"
+"  --mouse_move_multiplier=N    mouse movement acceleration multiplier\n"
+"  --mouse_wheel_multiplier=N   mouse wheel acceleration multiplier\n"
+"  --mp4=PATH                   dump simulation to a video file\n"
+"  --png_prefix=STR             prefix directory/name for generated PNGs\n"
+"  --png_skip_frames=NUM        frames to skip when generating PNGs\n"
+"  --render_device=ARG          OpenGL2 rendering target if OpenGL3 is unsupported\n"
+"  --save_bullet=PATH           save simulation to a .bullet file\n"
+"  --shared_memory_key=KEY      use a specific shared memory key\n"
+"  --stack_trim=PAT             stack trim words separated by a semicolon\n"
+"  --stack_trim_end=NUM         number of stack frames to trim from the end\n"
+"  --stack_trim_start=NUM       number of stack frames to trim from the start\n"
+"  --start_demo_name=NAME       starting demo name\n"
+"  --window_backend=ARG         OpenGL3 backend\n");
+	}
+
+	/* Kaedenn 2019/10/27 */
+	bool enableVerbose = false;
 	if (args.CheckCmdLineFlag("verbose"))
+	{
+		enableVerbose = true;
+	}
+	const char* verboseEnv = getenv("B3_EXAMPLE_BROWSER_VERBOSE");
+	if (verboseEnv != NULL && strlen(verboseEnv) > 0)
+	{
+		enableVerbose = true;
+	}
+	if (enableVerbose)
 	{
 		m_internalData->m_verboseMode = true;
 		b3Printf("Verbose mode for <%s::%s> is enabled", typeid(*this).name(), __FUNCTION__);
@@ -925,6 +1042,34 @@ bool OpenGLExampleBrowser::init(int argc, char* argv[])
 		for (int i = 0; i < argc; ++i)
 		{
 			b3Printf("argv[%d] = \"%s\"", i, argv[i]);
+		}
+	}
+
+	/* Kaedenn 2019/10/27 */
+	args.GetCmdLineArgument("stack_trim_start", gStackTrimStart);
+	args.GetCmdLineArgument("stack_trim_end", gStackTrimEnd);
+	char* trimStrings = NULL;
+	if (args.GetCmdLineArgument("stack_trim", trimStrings))
+	{
+		b3Printf("Parsing stack trim strings \"%s\"", trimStrings);
+		int i = 0;
+		int last = 0;
+		while (trimStrings[i] != '\0')
+		{
+			if (trimStrings[i] == ';')
+			{
+				gStackTrimFilters.push_back(std::string(&trimStrings[last], &trimStrings[i]));
+				last = i+1;
+			}
+			++i;
+		}
+		if (last < i)
+		{
+			gStackTrimFilters.push_back(std::string(&trimStrings[last]));
+		}
+		for (i = 0; i < gStackTrimFilters.size(); ++i)
+		{
+			b3Printf("Stack trim pattern %d: \"%s\"", i, gStackTrimFilters[i].c_str());
 		}
 	}
 
@@ -1241,9 +1386,12 @@ bool OpenGLExampleBrowser::init(int argc, char* argv[])
 
 	char* savePath = NULL;
 	args.GetCmdLineArgument("save_bullet", savePath);
-	if (savePath && strlen(savePath) > 0) {
+	if (savePath && strlen(savePath) > 0)
+	{
 		strncpy(saveFileName, savePath, sizeof(saveFileName)/sizeof(*saveFileName));
-	} else {
+	}
+	else
+	{
 		strcpy(saveFileName, startSaveFileName);
 	}
 
@@ -1312,7 +1460,7 @@ void OpenGLExampleBrowser::update(float deltaTime)
 	static int frameCount = 0;
 	frameCount++;
 
-	if (0)
+	if ((gDebugDrawFlags & btIDebugDraw::DBG_DrawFrames) != 0)
 	{
 		BT_PROFILE("Draw frame counter");
 		char bla[1024];
@@ -1330,9 +1478,12 @@ void OpenGLExampleBrowser::update(float deltaTime)
 			//printf("gPngFileName=%s\n",gPngFileName);
 			static int s_frameCount = 0;
 
-			if (gPngFilePrefix) {
+			if (gPngFilePrefix)
+			{
 				sprintf(staticPngFileName, "%s%s-%d.png", gPngFilePrefix, gPngFileName, s_frameCount++);
-			} else {
+			}
+			else
+			{
 				sprintf(staticPngFileName, "%s-%d.png", gPngFileName, s_frameCount++);
 			}
 			b3Printf("Made screenshot %s", staticPngFileName);
@@ -1351,7 +1502,7 @@ void OpenGLExampleBrowser::update(float deltaTime)
 
 			if (gFixedTimeStep > 0)
 			{
-				
+
 				sCurrentDemo->stepSimulation(gFixedTimeStep);
 			}
 			else
@@ -1387,15 +1538,15 @@ void OpenGLExampleBrowser::update(float deltaTime)
 	if (gui2 && s_guiHelper && s_guiHelper->getRenderInterface() && s_guiHelper->getRenderInterface()->getActiveCamera())
 	{
 		B3_PROFILE("setStatusBarMessage");
-		CommonCameraInterface* cci = s_guiHelper->getRenderInterface()->getActiveCamera();
+		CommonCameraInterface* ci = s_guiHelper->getRenderInterface()->getActiveCamera();
 		char msg[1024] = {0};
-		float camDist = cci->getCameraDistance();
-		float pitch = cci->getCameraPitch();
-		float yaw = cci->getCameraYaw();
+		float camDist = ci->getCameraDistance();
+		float pitch = ci->getCameraPitch();
+		float yaw = ci->getCameraYaw();
 		float camTarget[3] = {0};
 		float camPos[3] = {0};
-		cci->getCameraPosition(camPos);
-		cci->getCameraTargetPosition(camTarget);
+		ci->getCameraPosition(camPos);
+		ci->getCameraTargetPosition(camTarget);
 		snprintf(msg, sizeof(msg), "camTargetPos=%2.2f,%2.2f,%2.2f, dist=%2.2f, pitch=%2.2f, yaw=%2.2f", camTarget[0], camTarget[1], camTarget[2], camDist, pitch, yaw);
 		gui2->setStatusBarMessage(msg, true);
 	}
