@@ -6050,7 +6050,7 @@ static PyObject* pybullet_addUserDebugButton(PyObject* self, PyObject* args, PyO
 	b3PhysicsClientHandle sm = 0;
 	static char* kwlist[] = {"paramName", "startValue", "isTrigger", "physicsClientId", NULL};
 
-	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ii", kwlist, &text, &startValue, &isTrigger, &physicsClientId))
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|iii", kwlist, &text, &startValue, &isTrigger, &physicsClientId))
 	{
 		return NULL;
 	}
@@ -7135,6 +7135,10 @@ static PyObject* pybullet_getDebugVisualizerCamera(PyObject* self, PyObject* arg
 	struct b3OpenGLVisualizerCameraInfo camera;
 	PyObject* pyCameraList = 0;
 
+	if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &physicsClientId))
+	{
+		return NULL;
+	}
 	sm = getPhysicsClient(physicsClientId);
 	if (sm == 0)
 	{
@@ -12078,58 +12082,68 @@ static PyMethodDef MethodDefs[] = {
 	{"createVisualShape",
 	 (PyCFunction)pybullet_createVisualShape,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "createVisualShape(shapeType, radius=0.5, halfExtents=None, length=1, fileName=\"\", meshScale=None, planeNormal=None, flags=0, rgbaColor=None, specularColor=None, visualFramePosition=None, visualFrameOrientation=None, vertices=None, indices=None, normals=None, uvs=None, physicsClientId=0)\n"
 	 "Create a visual shape. Returns a non-negative (int) unique id, if "
 	 "successful, negative otherwise."},
 
 	{"createVisualShapeArray",
 	 (PyCFunction)pybullet_createVisualShapeArray,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "createVisualShapeArray(shapeTypes, radii=None, halfExtents=None, lengths=None, fileNames=None, meshScales=None, planeNormals=None, flags=None, rgbaColors=None, visualFramePositions=None, visualFrameOrientations=None, physicsClientId=0)\n"
 	 "Create visual shapes. Returns a non-negative (int) unique id, if "
 	 "successful, negative otherwise."},
 
 	{"createMultiBody",
 	 (PyCFunction)pybullet_createMultiBody,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "createMultiBody(baseMass=0, baseCollisionShapeIndex=-1, baseVisualShapeIndex=-1, basePosition=None, baseOrientation=None, baseInertialFramePosition=None, baseInertialFrameOrientation=None, linkMasses=None, linkCollisionShapeIndices=None, linkVisualShapeIndices=None, linkPositions=None, linkOrientations=None, linkInertialFramePositions=None, linkInertialFrameOrientations=None, linkParentIndices=None, linkJointTypes=None, linkJointAxis=None, useMaximalCoordinates=0, flags=-1, batchPositions=None, physicsClientId=0)\n"
 	 "Create a multi body. Returns a non-negative (int) unique id, if "
 	 "successful, negative otherwise."},
 
 	{"createConstraint",
 	 (PyCFunction)pybullet_createUserConstraint,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "createConstraint(parentBodyUniqueId, parentLinkIndex, childBodyUniqueId, childLinkIndex, jointType, jointAxis, parentFramePosition, childFramePosition, parentFrameOrientation=None, childFrameOrientation=None, physicsClientId=0)\n"
 	 "Create a constraint between two bodies. Returns a (int) unique id, if "
 	 "successful."},
 
 	{"changeConstraint",
 	 (PyCFunction)pybullet_changeUserConstraint,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "changeConstraint(userConstraintUniqueId, jointChildPivot=None, jointChildFrameOrientation=None, maxForce=-1, gearRatio=0, gearAuxLink=-1, relativePositionTarget=1e32, erp=-1, physicsClientId=0)\n"
 	 "Change some parameters of an existing constraint, such as the child "
 	 "pivot or child frame orientation, using its unique id."},
 
 	{"removeConstraint",
 	 (PyCFunction)pybullet_removeUserConstraint,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "removeConstraint(userConstraintUniqueId, physicsClientId=0)\n"
 	 "Remove a constraint using its unique id."},
 
 	{"enableJointForceTorqueSensor",
 	 (PyCFunction)pybullet_enableJointForceTorqueSensor,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "enableJointForceTorqueSensor(bodyUniqueId, jointIndex, enableSensor=1, physicsClientId=0)\n"
 	 "Enable or disable a joint force/torque sensor measuring the joint "
 	 "reaction forces."},
 
 	{"saveWorld",
 	 (PyCFunction)pybullet_saveWorld,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "saveWorld(worldFileName, physicsClientId=0)\n"
 	 "Save a approximate Python file to reproduce the current state of the "
 	 "world: saveWorld (filename) (very preliminary and approximate!)"},
 
 	{"getNumBodies",
 	 (PyCFunction)pybullet_getNumBodies,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getNumBodies(physicsClientId=0)\n"
 	 "Get the number of bodies in the simulation."},
 
 	{"getBodyUniqueId",
 	 (PyCFunction)pybullet_getBodyUniqueId,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getBodyUniqueId(serialIndex, physicsClientId=0)\n"
 	 "getBodyUniqueId is used after connecting to server with existing bodies."
 	 "Get the unique ID of the body, given a integer range [0..number of "
 	 "bodies)."},
@@ -12137,6 +12151,7 @@ static PyMethodDef MethodDefs[] = {
 	{"getBodyInfo",
 	 (PyCFunction)pybullet_getBodyInfo,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getBodyInfo(bodyUniqueId, physicsClientId=0)\n"
 	 "Get the body info, given a body unique id."},
 
 	{"syncBodyInfo",
@@ -12193,44 +12208,52 @@ static PyMethodDef MethodDefs[] = {
 	{"removeBody",
 	 (PyCFunction)pybullet_removeBody,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "removeBody(bodyUniqueId, physicsClientId=0)\n"
 	 "Remove a body by its body unique id."},
 
 	{"getNumConstraints",
 	 (PyCFunction)pybullet_getNumConstraints,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getNumConstraints(physicsClientId=0)\n"
 	 "Get the number of user-created constraints in the simulation."},
 
 	{"getConstraintInfo",
 	 (PyCFunction)pybullet_getConstraintInfo,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getConstraintInfo(constraintUniqueId, physicsClientId=0)\n"
 	 "Get the user-created constraint info, given a constraint unique id."},
 
 	{"getConstraintState",
 	 (PyCFunction)pybullet_getConstraintState,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getConstraintState(constraintUniqueId, physicsClientId=0)\n"
 	 "Get the user-created constraint state (applied forces), given a "
 	 "constraint unique id."},
 
 	{"getConstraintUniqueId",
 	 (PyCFunction)pybullet_getConstraintUniqueId,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getConstraintUniqueId(serialIndex, physicsClientId=0)\n"
 	 "Get the unique id of the constraint, given a integer index in range "
 	 "[0..number of constraints)."},
 
 	{"getBasePositionAndOrientation",
 	 (PyCFunction)pybullet_getBasePositionAndOrientation,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getBasePositionAndOrientation(bodyUniqueId, physicsClientId=0)\n"
 	 "Get the world position and orientation of the base of the object. "
 	 "(x,y,z) position vector and (x,y,z,w) quaternion orientation."},
 
 	{"getAABB",
 	 (PyCFunction)pybullet_getAABB,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getAABB(bodyUniqueId, linkIndex, physicsClientId=0)\n"
 	 "Get the axis aligned bound box min and max coordinates in world space."},
 
 	{"resetBasePositionAndOrientation",
 	 (PyCFunction)pybullet_resetBasePositionAndOrientation,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "resetBasePositionAndOrientation(bodyUniqueId, posObj, ornObj, physicsClientId=0)\n"
 	 "Reset the world position and orientation of the base of the object "
 	 "instantaneously, not through physics simulation. (x,y,z) position vector "
 	 "and (x,y,z,w) quaternion orientation."},
@@ -12238,6 +12261,7 @@ static PyMethodDef MethodDefs[] = {
 	{"getBaseVelocity",
 	 (PyCFunction)pybullet_getBaseVelocity,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getBaseVelocity(bodyUniqueId, physicsClientId=0)\n"
 	 "Get the linear and angular velocity of the base of the object "
 	 " in world space coordinates. "
 	 "(x,y,z) linear velocity vector and (x,y,z) angular velocity vector."},
@@ -12245,6 +12269,7 @@ static PyMethodDef MethodDefs[] = {
 	{"resetBaseVelocity",
 	 (PyCFunction)pybullet_resetBaseVelocity,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "resetBaseVelocity(objectUniqueId, linearVelocity=None, angularVelocity=None, physicsClientId=0)\n"
 	 "Reset the linear and/or angular velocity of the base of the object "
 	 " in world space coordinates. "
 	 "linearVelocity (x,y,z) and angularVelocity (x,y,z)."},
@@ -12252,32 +12277,38 @@ static PyMethodDef MethodDefs[] = {
 	{"getNumJoints",
 	 (PyCFunction)pybullet_getNumJoints,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getNumJoints(bodyUniqueId, physicsClientId=0)\n"
 	 "Get the number of joints for an object."},
 
 	{"getJointInfo",
 	 (PyCFunction)pybullet_getJointInfo,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getJointInfo(bodyUniqueId, jointIndex, physicsClientId=0)\n"
 	 "Get the name and type info for a joint on a body."},
 
 	{"getJointState",
 	 (PyCFunction)pybullet_getJointState,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getJointState(bodyUniqueId, jointIndex, physicsClientId=0)\n"
 	 "Get the state (position, velocity etc) for a joint on a body."},
 
 	{"getJointStates",
 	 (PyCFunction)pybullet_getJointStates,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getJointStates(bodyUniqueId, jointIndices, physicsClientId=0)\n"
 	 "Get the state (position, velocity etc) for multiple joints on a body."},
 
 	{"getJointStateMultiDof",
 	 (PyCFunction)pybullet_getJointStateMultiDof,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getJointStateMultiDof(bodyUniqueId, jointIndex, physicsClientId=0)\n"
 	 "Get the state (position, velocity etc) for a joint on a body (supports "
 	 "planar and spherical joints)"},
 
 	{"getJointStatesMultiDof",
 	 (PyCFunction)pybullet_getJointStatesMultiDof,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getJointStatesMultiDof(bodyUniqueId, jointIndex, physicsClientId=0)\n"
 	 "Get the states (position, velocity etc) for multiple joint on a body "
 	 "(supports planar and spherical joints)"},
 
@@ -12288,8 +12319,7 @@ static PyMethodDef MethodDefs[] = {
 	 "position_linkcom_frame, frame_rotation_linkcom,\n"
 	 "position_frame_world, world_rotation_frame,\n"
 	 "linearVelocity_linkcom_world, angularVelocity_linkcom_world\n"
-	 "  = getLinkState(objectUniqueId, linkIndex, computeLinkVelocity=0,\n"
-	 "				 computeForwardKinematics=0, physicsClientId=0)\n"
+	 "  = getLinkState(objectUniqueId, linkIndex, computeLinkVelocity=0, computeForwardKinematics=0, physicsClientId=0)\n"
 	 "Provides extra information such as the Cartesian world coordinates"
 	 " center of mass (COM) of the link, relative to the world reference"
 	 " frame."},
@@ -12297,46 +12327,47 @@ static PyMethodDef MethodDefs[] = {
 	{"getLinkStates",
 	 (PyCFunction)pybullet_getLinkStates,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "same as getLinkState except it takes a list of linkIndices"},
+	 "getLinkStates(bodyUniqueId, linkIndices, computeLinkVelocity=0, computeForwardKinematics=0, physicsClientId=0)\n"
+	 "Same as getLinkState except it takes a list of linkIndices"},
 
 	{"resetJointState",
 	 (PyCFunction)pybullet_resetJointState,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "resetJointState(objectUniqueId, jointIndex, targetValue, "
-	 "targetVelocity=0, physicsClientId=0)\n"
+	 "resetJointState(objectUniqueId, jointIndex, targetValue, targetVelocity=0, physicsClientId=0)\n"
 	 "Reset the state (position, velocity etc) for a joint on a body "
 	 "instantaneously, not through physics simulation."},
 
 	{"resetJointStateMultiDof",
 	 (PyCFunction)pybullet_resetJointStateMultiDof,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "resetJointStateMultiDof(objectUniqueId, jointIndex, targetValue, "
-	 "targetVelocity=0, physicsClientId=0)\n"
+	 "resetJointStateMultiDof(objectUniqueId, jointIndex, targetValue, targetVelocity=0, physicsClientId=0)\n"
 	 "Reset the state (position, velocity etc) for a joint on a body "
 	 "instantaneously, not through physics simulation."},
 
 	{"resetJointStatesMultiDof",
 	 (PyCFunction)pybullet_resetJointStatesMultiDof,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "resetJointStatesMultiDof(objectUniqueId, jointIndices, targetValues, "
-	 "targetVelocities=0, physicsClientId=0)\n"
+	 "resetJointStatesMultiDof(objectUniqueId, jointIndices, targetValues, targetVelocities=0, physicsClientId=0)\n"
 	 "Reset the states (position, velocity etc) for multiple joints on a body "
 	 "instantaneously, not through physics simulation."},
 
 	{"changeDynamics",
 	 (PyCFunction)pybullet_changeDynamicsInfo,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "change dynamics information such as mass, lateral friction coefficient."},
+	"changeDynamics(bodyUniqueId, linkIndex, mass=-1, lateralFriction=-1, spinningFriction=-1, rollingFriction=-1, restitution=-1, linearDamping=-1, angularDamping=-1, contactStiffness=-1, contactDamping=-1, frictionAnchor=-1, localInertiaDiagonal=None, ccdSweptSphereRadius=-1, contactProcessingThreshold=-1, activationState=-1, jointDamping=-1, anisotropicFriction=None, maxJointVelocity=-1,  physicsClientId=0)\n"
+	 "Change dynamics information such as mass, lateral friction coefficient."},
 
 	{"getDynamicsInfo",
 	 (PyCFunction)pybullet_getDynamicsInfo,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getDynamicsInfo(bodyUniqueId, linkIndex, physicsClientId=0)\n"
 	 "Get dynamics information such as mass, lateral friction coefficient."},
 
 #ifdef PYB3_EXPORT_OBSOLETE
 	{"setJointMotorControl",
 	 (PyCFunction)pybullet_setJointMotorControl,
 	 METH_VARARGS,
+	 "setJointMotorControlArray(bodyUniqueId, jointIndices, controlMode, targetPositions=None, targetVelocities=None, forces=None, positionGains=None, velocityGains=None, physicsClientId=0)\n"
 	 "This (obsolete) method cannot select non-zero physicsClientId, use "
 	 "setJointMotorControl2 instead. Set a single joint motor control mode "
 	 "and desired target value. There is no immediate state change, "
@@ -12346,12 +12377,14 @@ static PyMethodDef MethodDefs[] = {
 	{"setJointMotorControl2",
 	 (PyCFunction)pybullet_setJointMotorControl2,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setJointMotorControl2(bodyUniqueId, jointIndex, controlMode, targetPosition=0.0, targetVelocity=0.0, force=100000.0, positionGain=0.1, velocityGain=1.0, maxVelocity=-1, physicsClientId=0)\n"
 	 "Set a single joint motor control mode and desired target value. There is "
 	 "no immediate state change, stepSimulation will process the motors."},
 
 	{"setJointMotorControlMultiDof",
 	 (PyCFunction)pybullet_setJointMotorControlMultiDof,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setJointMotorControlMultiDof(bodyUniqueId, jointIndex, controlMode, targetPosition=None, targetVelocity=None, force=None, positionGain=0.1, velocityGain=1.0, maxVelocity=-1, physicsClientId=0)\n"
 	 "Set a single joint motor control mode and desired target value. There is "
 	 "no immediate state change, stepSimulation will process the motors."
 	 "This method sets multi-degree-of-freedom motor such as the spherical "
@@ -12360,6 +12393,7 @@ static PyMethodDef MethodDefs[] = {
 	{"setJointMotorControlMultiDofArray",
 	 (PyCFunction)pybullet_setJointMotorControlMultiDofArray,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setJointMotorControlMultiDofArray(bodyUniqueId, jointIndices, controlMode, targetPositions=None, targetVelocities=None, forces=None, positionGains=None, velocityGains=None, maxVelocities=None, physicsClientId=0)\n"
 	 "Set control mode and desired target values for multiple motors. There is "
 	 "no immediate state change, stepSimulation will process the motors."
 	 "This method sets multi-degree-of-freedom motor such as the spherical "
@@ -12368,6 +12402,7 @@ static PyMethodDef MethodDefs[] = {
 	{"setJointMotorControlArray",
 	 (PyCFunction)pybullet_setJointMotorControlArray,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setJointMotorControlArray(bodyUniqueId, jointIndices, controlMode, targetPositions=None, targetVelocities=None, forces=None, positionGains=None, velocityGains=None, physicsClientId=0)\n"
 	 "Set an array of motors control mode and desired target value. There is "
 	 "no immediate state change, stepSimulation will process the motors."
 	 "This is similar to setJointMotorControl2, with jointIndices as a list, "
@@ -12378,14 +12413,16 @@ static PyMethodDef MethodDefs[] = {
 	{"applyExternalForce",
 	 (PyCFunction)pybullet_applyExternalForce,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "for objectUniqueId, linkIndex (-1 for base/root link), apply a force "
+	 "applyExternalForce(objectUniqueId, linkIndex, forceObj, posObj, flags, physicsClientId=0)\n"
+	 "For objectUniqueId, linkIndex (-1 for base/root link), apply a force "
 	 "[x,y,z] at the a position [x,y,z], flag to select FORCE_IN_LINK_FRAME or "
 	 "WORLD_FRAME coordinates"},
 
 	{"applyExternalTorque",
 	 (PyCFunction)pybullet_applyExternalTorque,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "for objectUniqueId, linkIndex (-1 for base/root link) apply a torque "
+	 "applyExternalTorque(objectUniqueId, linkIndex, torqueObj, flags, physicsClientId=0)\n"
+	 "For objectUniqueId, linkIndex (-1 for base/root link) apply a torque "
 	 "[x,y,z] in Cartesian coordinates, flag to select TORQUE_IN_LINK_FRAME or "
 	 "WORLD_FRAME coordinates"},
 
@@ -12398,6 +12435,7 @@ static PyMethodDef MethodDefs[] = {
 	{"getCameraImage",
 	 (PyCFunction)pybullet_getCameraImage,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getCameraImage(width, height, viewMatrix=None, projectionMatrix=None, lightDirection=None, lightColor=None, lightDistance=-1, shadow=-1, lightAmbientCoeff=-1, lightDiffuseCoeff=-1, lightSpecularCoeff=-1, renderer=-1, flags=-1, projectiveTextureView=None, projectiveTextureProj=None, physicsClientId=0)\n"
 	 "Render an image (given the pixel resolution width, height, camera "
 	 "viewMatrix, projectionMatrix, lightDirection, lightColor, "
 	 "lightDistance, shadow, lightAmbientCoeff, lightDiffuseCoeff, "
@@ -12408,36 +12446,42 @@ static PyMethodDef MethodDefs[] = {
 	{"isNumpyEnabled",
 	 (PyCFunction)pybullet_isNumpyEnabled,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "isNumpyEnabled(physicsClientId=0)\n"
 	 "return True if PyBullet was compiled with NUMPY support. This makes "
 	 "the getCameraImage API faster"},
 
 	{"computeViewMatrix",
 	 (PyCFunction)pybullet_computeViewMatrix,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "computeViewMatrix(cameraEyePosition, cameraTargetPosition, cameraUpVector, physicsClientId=0)\n"
 	 "Compute a camera viewmatrix from camera eye, target position and up"
 	 " vector"},
 
 	{"computeViewMatrixFromYawPitchRoll",
 	 (PyCFunction)pybullet_computeViewMatrixFromYawPitchRoll,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "computeViewMatrixFromYawPitchRoll(cameraTargetPosition, distance, yaw, pitch, roll, upAxisIndex, physicsClientId=0)\n"
 	 "Compute a camera viewmatrix from camera eye, target position and up"
 	 " vector"},
 
 	{"computeProjectionMatrix",
 	 (PyCFunction)pybullet_computeProjectionMatrix,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "computeProjectionMatrix(left, right, bottom, top, nearVal, farVal, physicsClientId=0)\n"
 	 "Compute a camera projection matrix from screen "
 	 "left/right/bottom/top/near/far values"},
 
 	{"computeProjectionMatrixFOV",
 	 (PyCFunction)pybullet_computeProjectionMatrixFOV,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "computeProjectionMatrixFOV(fov, aspect, nearVal, farVal, physicsClientId=0)\n"
 	 "Compute a camera projection matrix from fov, aspect ratio, near, far"
 	 " values"},
 
 	{"getContactPoints",
 	 (PyCFunction)pybullet_getContactPointData,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getContactPoints(bodyA=-1, bodyB=-1, linkIndexA=-2, linkIndexB=-2, physicsClientId=0)\n"
 	 "Return existing contact points after the stepSimulation command. "
 	 "Optional arguments one or two object unique ids, that need to be "
 	 "involved in the contact."},
@@ -12445,6 +12489,7 @@ static PyMethodDef MethodDefs[] = {
 	{"getClosestPoints",
 	 (PyCFunction)pybullet_getClosestPointData,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getClosestPoints(bodyA, bodyB, distance, linkIndexA=-2, linkIndexB=-2, collisionShapeA=-1, collisionShapeB=-1, collisionShapePositionA=None, collisionShapePositionB=None, collisionShapeOrientationA=None, collisionShapeOrientationB=None, physicsClientId=0)\n"
 	 "Compute the closest points between two objects, if the distance is "
 	 "below a given threshold. Input is two objects unique ids and distance "
 	 "threshold."},
@@ -12452,6 +12497,7 @@ static PyMethodDef MethodDefs[] = {
 	{"getOverlappingObjects",
 	 (PyCFunction)pybullet_getOverlappingObjects,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getOverlappingObjects(aabbMin, aabbMax, physicsClientId=0)\n"
 	 "Return all the objects that have overlap with a given axis-aligned "
 	 "bounding box volume (AABB). Input are two vectors defining the AABB in "
 	 "world space [min_x,min_y,min_z],[max_x,max_y,max_z]."},
@@ -12459,6 +12505,7 @@ static PyMethodDef MethodDefs[] = {
 	{"setCollisionFilterPair",
 	 (PyCFunction)pybullet_setCollisionFilterPair,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setCollisionFilterPair(bodyUniqueIdA, bodyUniqueIdB, linkIndexA, linkIndexB, enableCollision, physicsClientId=0)\n"
 	 "Enable or disable collision detection between two object links. Inputs "
 	 "are two object unique ids and two link indices and an enum to enable or "
 	 "disable collisions."},
@@ -12466,11 +12513,13 @@ static PyMethodDef MethodDefs[] = {
 	{"setCollisionFilterGroupMask",
 	 (PyCFunction)pybullet_setCollisionFilterGroupMask,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setCollisionFilterGroupMask(bodyUniqueId, linkIndexA, collisionFilterGroup, collisionFilterMask, physicsClientId=0)\n"
 	 "Set the collision filter group and the mask for a body."},
 
 	{"addUserDebugLine",
 	 (PyCFunction)pybullet_addUserDebugLine,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "addUserDebugLine(lineFromXYZ, lineToXYZ, lineColorRGB=None, lineWidth=1.0, lifeTime=0.0, parentObjectUniqueId=-1, parentLinkIndex=-1, replaceItemUniqueId=-1, physicsClientId=0)\n"
 	 "Add a user debug draw line with lineFrom[3], lineTo[3], "
 	 "lineColorRGB[3], lineWidth, lifeTime. A lifeTime of 0 means permanent "
 	 "until removed. Returns a unique id for the user debug item."},
@@ -12478,6 +12527,7 @@ static PyMethodDef MethodDefs[] = {
 	{"addUserDebugText",
 	 (PyCFunction)pybullet_addUserDebugText,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "addUserDebugText(text, textPosition, textColorRGB=None, textSize=1.0, lifeTime=0.0, textOrientation=None, parentObjectUniqueId=-1, parentLinkIndex=-1, replaceItemUniqueId=-1, physicsClientId=0)\n"
 	 "Add a user debug draw line with text, textPosition[3], textSize and "
 	 "lifeTime in seconds. A lifeTime of 0 means permanent until removed. "
 	 "Returns a unique id for the user debug item."},
@@ -12485,11 +12535,13 @@ static PyMethodDef MethodDefs[] = {
 	{"addUserDebugParameter",
 	 (PyCFunction)pybullet_addUserDebugParameter,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "addUserDebugParameter(paramName, rangeMin=0.0, rangeMax=1.0, startValue=0.0, physicsClientId=0)\n"
 	 "Add a user debug slider that can be controlled using a GUI."},
 
 	{"readUserDebugParameter",
 	 (PyCFunction)pybullet_readUserDebugParameter,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "readUserDebugParameter(itemUniqueId, physicsClientId=0)\n"
 	 "Read the current value of a user debug parameter, given the user debug "
 	 "item unique id."},
 
@@ -12517,16 +12569,19 @@ static PyMethodDef MethodDefs[] = {
 	{"removeUserDebugItem",
 	 (PyCFunction)pybullet_removeUserDebugItem,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "remove a user debug draw item, giving its unique id"},
+	 "removeUserDebugItem(itemUniqueId, physicsClientId=0)\n"
+	 "Remove a user debug draw item, giving its unique id"},
 
 	{"removeAllUserDebugItems",
 	 (PyCFunction)pybullet_removeAllUserDebugItems,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "remove all user debug draw items"},
+	 "removeAllUserDebugItems(physicsClientId=0)\n"
+	 "Remove all user debug draw items"},
 
 	{"setDebugObjectColor",
 	 (PyCFunction)pybullet_setDebugObjectColor,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setDebugObjectColor(objectUniqueId, linkIndex, objectDebugColorRGB=None, physicsClientId=0)\n"
 	 "Override the wireframe debug drawing color for a particular object "
 	 "unique id / link index. If you omit the color, the custom color will be "
 	 "removed."},
@@ -12534,33 +12589,39 @@ static PyMethodDef MethodDefs[] = {
 	{"getDebugVisualizerCamera",
 	 (PyCFunction)pybullet_getDebugVisualizerCamera,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getDebugVisualizerCamera(physicsClientId=0)\n"
 	 "Get information about the 3D visualizer camera, such as width, height, "
 	 "view matrix, projection matrix etc."},
 
 	{"configureDebugVisualizer",
 	 (PyCFunction)pybullet_configureDebugVisualizer,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "configureDebugVisualizer(flag=-1, enable=-1, lightPosition=None, shadowMapResolution=-1, shadowMapWorldSize=-1, remoteSyncTransformInterval=-1, physicsClientId=0)\n"
 	 "For the 3D OpenGL Visualizer, enable/disable GUI, shadows."},
 
 	{"resetDebugVisualizerCamera",
 	 (PyCFunction)pybullet_resetDebugVisualizerCamera,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "resetDebugVisualizerCamera(cameraDistance, cameraYaw, cameraPitch, cameraTargetPosition, physicsClientId=0)\n"
 	 "For the 3D OpenGL Visualizer, set the camera distance, yaw, pitch and "
 	 "target position."},
 
 	{"getVisualShapeData",
 	 (PyCFunction)pybullet_getVisualShapeData,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getVisualShapeData(objectUniqueId, flags=0, physicsClientId=0)\n"
 	 "Return the visual shape information for one object."},
 
 	{"getCollisionShapeData",
 	 (PyCFunction)pybullet_getCollisionShapeData,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getCollisionShapeData(objectUniqueId, linkIndex, physicsClientId=0)\n"
 	 "Return the collision shape information for one object."},
 
 	{"changeVisualShape",
 	 (PyCFunction)pybullet_changeVisualShape,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "changeVisualShape(objectUniqueId, linkIndex, shapeIndex=-1, textureUniqueId=-2, rgbaColor=None, specularColor=None, physicsClientId=0)\n"
 	 "Change part of the visual shape information for one object."},
 
 #ifdef PYB3_EXPORT_OBSOLETE
@@ -12573,89 +12634,102 @@ static PyMethodDef MethodDefs[] = {
 	{"loadTexture",
 	 (PyCFunction)pybullet_loadTexture,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "loadTexture(textureFilename, physicsClientId=0)\n"
 	 "Load texture file."},
 
 	{"changeTexture",
 	 (PyCFunction)pybullet_changeTexture,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "changeTexture(textureUniqueId, pixels, width, height, physicsClientId=0)\n"
 	 "Change a texture file."},
 
 	{"getQuaternionFromEuler",
 	 (PyCFunction)pybullet_getQuaternionFromEuler,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getQuaternionFromEuler(eulerAngles, physicsClientId=0)\n"
 	 "Convert Euler [roll, pitch, yaw] as in URDF/SDF convention, to "
 	 "quaternion [x,y,z,w]"},
 
 	{"getEulerFromQuaternion",
 	 (PyCFunction)pybullet_getEulerFromQuaternion,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getEulerFromQuaternion(quaternion, physicsClientId=0)\n"
 	 "Convert quaternion [x,y,z,w] to Euler [roll, pitch, yaw] as in URDF/SDF "
 	 "convention"},
 
 	{"multiplyTransforms",
 	 (PyCFunction)pybullet_multiplyTransforms,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "multiplyTransforms(positionA, orientationA, positionB, orientationB, physicsClientId=0)\n"
 	 "Multiply two transform, provided as [position], [quaternion]."},
 
 	{"invertTransform",
 	 (PyCFunction)pybullet_invertTransform,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "invertTransform(position, orientation, physicsClientId=0)\n"
 	 "Invert a transform, provided as [position], [quaternion]."},
 
 	{"getMatrixFromQuaternion",
 	 (PyCFunction)pybullet_getMatrixFromQuaternion,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getMatrixFromQuaternion(quaternion, physicsClientId=0)\n"
 	 "Compute the 3x3 matrix from a quaternion, as a list of 9 values"},
 
 	{"getQuaternionSlerp",
 	 (PyCFunction)pybullet_getQuaternionSlerp,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getQuaternionSlerp(quaternionStart, quaternionEnd, interpolationFraction, physicsClientId=0)\n"
 	 "Compute the spherical interpolation given a start and end quaternion "
 	 "and an interpolation value in range [0..1]"},
 
 	{"getQuaternionFromAxisAngle",
 	 (PyCFunction)pybullet_getQuaternionFromAxisAngle,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getQuaternionFromAxisAngle(axis, angle, physicsClientId=0)\n"
 	 "Compute the quaternion from axis and angle representation."},
 
 	{"getAxisAngleFromQuaternion",
 	 (PyCFunction)pybullet_getAxisAngleFromQuaternion,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getAxisAngleFromQuaternion(quaternion, physicsClientId=0)\n"
 	 "Compute the quaternion from axis and angle representation."},
 
 	{"getDifferenceQuaternion",
 	 (PyCFunction)pybullet_getDifferenceQuaternion,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getDifferenceQuaternion(quaternionStart, quaternionEnd, physicsClientId=0)\n"
 	 "Compute the quaternion difference from two quaternions."},
 
 	{"getAxisDifferenceQuaternion",
 	 (PyCFunction)pybullet_getAxisDifferenceQuaternion,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getAxisDifferenceQuaternion(quaternionStart, quaternionEnd, physicsClientId=0)\n"
 	 "Compute the velocity axis difference from two quaternions."},
 
 	{"calculateVelocityQuaternion",
 	 (PyCFunction)pybullet_calculateVelocityQuaternion,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "calculateVelocityQuaternion(quaternionStart, quaternionEnd, deltaTime, physicsClientId=0)\n"
 	 "Compute the angular velocity given start and end quaternion and delta "
 	 "time."},
 
 	{"rotateVector",
 	 (PyCFunction)pybullet_rotateVector,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "rotateVector(quaternion, vector, physicsClientId=0)\n"
 	 "Rotate a vector using a quaternion."},
 
 	{"calculateInverseDynamics",
 	 (PyCFunction)pybullet_calculateInverseDynamics,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "calculateInverseDynamics(bodyUniqueId, objPositions, objVelocities, objAccelerations, flags=0, physicsClientId=0)\n"
 	 "Given an object id, joint positions, joint velocities and joint "
 	 "accelerations, compute the joint forces using Inverse Dynamics"},
 
 	{"calculateJacobian",
 	 (PyCFunction)pybullet_calculateJacobian,
 	 METH_VARARGS | METH_KEYWORDS,
-	 "linearJacobian, angularJacobian = calculateJacobian(bodyUniqueId, "
-	 "linkIndex, localPosition, objPositions, objVelocities, "
-	 "objAccelerations, physicsClientId=0)\n"
+	 "linearJacobian, angularJacobian = calculateJacobian(bodyUniqueId, linkIndex, localPosition, objPositions, objVelocities, objAccelerations, physicsClientId=0)\n"
 	 "Compute the jacobian for a specified local position on a body and its "
 	 "kinematics.\n"
 	 "Args:\n"
@@ -12686,6 +12760,7 @@ static PyMethodDef MethodDefs[] = {
 	{"calculateInverseKinematics",
 	 (PyCFunction)pybullet_calculateInverseKinematics,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "calculateInverseKinematics(bodyUniqueId, endEffectorLinkIndex, targetPosition, targetOrientation=None, lowerLimits=None, upperLimits=None, jointRanges=None, restPoses=None, jointDamping=None, solver=0, currentPositions=None, maxNumIterations=-1, residualThreshold=-1, physicsClientId=0)\n"
 	 "Inverse Kinematics bindings: Given an object id, "
 	 "current joint positions and target position for the end effector,"
 	 "compute the inverse kinematics and return the new joint state"},
@@ -12693,6 +12768,7 @@ static PyMethodDef MethodDefs[] = {
 	{"calculateInverseKinematics2",
 	 (PyCFunction)pybullet_calculateInverseKinematics2,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "calculateInverseKinematics2(bodyUniqueId, endEffectorLinkIndices, targetPositions, lowerLimits=None, upperLimits=None, jointRanges=None, restPoses=None, jointDamping=None, solver=0, currentPositions=None, maxNumIterations=-1, residualThreshold=-1, physicsClientId=0)\n"
 	 "Inverse Kinematics bindings: Given an object id, "
 	 "current joint positions and target positions for the end effectors,"
 	 "compute the inverse kinematics and return the new joint state"},
@@ -12700,12 +12776,14 @@ static PyMethodDef MethodDefs[] = {
 	{"getVREvents",
 	 (PyCFunction)pybullet_getVREvents,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getVREvents(deviceTypeFilter=VR_DEVICE_CONTROLLER, allAnalogAxes=0, physicsClientId=0)\n"
 	 "Get Virtual Reality events, for example to track VR controllers "
 	 "position/buttons"},
 
 	{"setVRCameraState",
 	 (PyCFunction)pybullet_setVRCameraState,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "setVRCameraState(rootPosition=None, rootOrientation=None, trackObject=-2, trackObjectFlag=-1, physicsClientId=0)\n"
 	 "Set properties of the VR Camera such as its root transform "
 	 "for teleporting or to track objects (camera inside a vehicle for"
 	 " example)."},
@@ -12713,18 +12791,21 @@ static PyMethodDef MethodDefs[] = {
 	{"getKeyboardEvents",
 	 (PyCFunction)pybullet_getKeyboardEvents,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getKeyboardEvents(physicsClientId=0)\n"
 	 "Get keyboard events, keycode and state (bit mask of KEY_IS_DOWN, "
 	 "KEY_WAS_TRIGGERED, KEY_WAS_RELEASED)"},
 
 	{"getMouseEvents",
 	 (PyCFunction)pybullet_getMouseEvents,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "getMouseEvents(physicsClientId=0)\n"
 	 "Get mouse events, event type and button state (bit mask of KEY_IS_DOWN, "
 	 "KEY_WAS_TRIGGERED, KEY_WAS_RELEASED)"},
 
 	{"startStateLogging",
 	 (PyCFunction)pybullet_startStateLogging,
 	 METH_VARARGS | METH_KEYWORDS,
+	 "startStateLogging(loggingType, fileName, objectUniqueIds=None, maxLogDof=-1, bodyUniqueIdA=-1, bodyUniqueIdB=-1, linkIndexA=-2, linkIndexB=-2, deviceTypeFilter=-1, logFlags=-1, physicsClientId=0)\n"
 	 "Start logging of state, such as robot base position, orientation, joint "
 	 "positions etc. Specify loggingType (STATE_LOGGING_MINITAUR, "
 	 "STATE_LOGGING_GENERIC_ROBOT, STATE_LOGGING_VR_CONTROLLERS, "
