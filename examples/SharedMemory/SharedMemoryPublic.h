@@ -106,8 +106,7 @@ enum EnumSharedMemoryClientCommand
 	CMD_COLLISION_FILTER,
 	CMD_REQUEST_MESH_DATA,
 
-	//don't go beyond this command!
-	CMD_MAX_CLIENT_COMMANDS,
+	CMD_MAX_CLIENT_COMMANDS = CMD_REQUEST_MESH_DATA + 100
 };
 
 enum EnumSharedMemoryServerStatus
@@ -228,8 +227,8 @@ enum EnumSharedMemoryServerStatus
 
 	CMD_REQUEST_MESH_DATA_COMPLETED,
 	CMD_REQUEST_MESH_DATA_FAILED,
-	//don't go beyond 'CMD_MAX_SERVER_COMMANDS!
-	CMD_MAX_SERVER_COMMANDS
+
+	CMD_MAX_SERVER_COMMANDS = CMD_REQUEST_MESH_DATA_FAILED + 100
 };
 
 enum JointInfoFlags
