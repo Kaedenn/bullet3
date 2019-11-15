@@ -260,6 +260,9 @@ int b3PluginManager::loadPlugin(const char* pluginPath, const char* postFixStr)
 			else
 			{
 				b3Warning("Loaded plugin but couldn't bind functions");
+				b3Warning("expected initFunc: %p \"%s\"", (void*)plugin->m_initFunc, initStr.c_str());
+				b3Warning("expected exitFunc: %p \"%s\"", (void*)plugin->m_exitFunc, exitStr.c_str());
+				b3Warning("expected executePluginCommand: %p \"%s\"", (void*)plugin->m_executeCommandFunc, executePluginCommandStr.c_str());
 			}
 
 			if (!ok)
